@@ -1,4 +1,4 @@
-# EOL Long input table XBlock
+# CMMEdu Long input table XBlock
 
 ![https://github.com/eol-uchile/eol-vof-xblock/actions](https://github.com/eol-uchile/eol-vof-xblock/workflows/Python%20application/badge.svg)
 
