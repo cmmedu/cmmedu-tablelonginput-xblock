@@ -222,10 +222,11 @@ class tablelonginputXBlock(XBlock):
             template,
             initialize_js_func='TLIXBlock',
             additional_css=[
-                'public/css/tablelonginput.css',
+                'public/css/tablelonginput.css'
             ],
             additional_js=[
-                'public/js/tablelonginput.js',
+                'public/js/mathjax.js',
+                'public/js/tablelonginput.js'
             ],
         )
         return frag
