@@ -27,7 +27,7 @@ class tablelonginputXBlock(XBlock):
         display_name="Display Name",
         help="Nombre del componente",
         scope=Scope.settings,
-        default="Eol Table long input XBlock"
+        default="Table long input XBlock"
     )
 
     texto_verdadero = String(

@@ -11,6 +11,16 @@ function TLIXBlock(runtime, element, settings) {
     var subFeedback = $element.find('.submission-feedback');
     var statusDiv = $element.find('.status');
 
+    function renderAnswersAsPlainText() {
+        $element.find('.student_answer').each(function() {
+            var answerText = $(this).val();
+            var plainTextAnswer = $('<div class="student_answer_plaintext"></div>');
+            plainTextAnswer.text(answerText);
+            plainTextAnswer.css('white-space', 'pre-wrap');
+            $(this).replaceWith(plainTextAnswer);
+        });
+    }
+
     function updateText(result) {
         //reviso si estoy mostrando correctitud
         
@@ -45,6 +55,7 @@ function TLIXBlock(runtime, element, settings) {
             if(result.intentos >= result.nro_de_intentos){
                 buttonCheck.attr("disabled", true);
                 $element.find('.tablagrande').addClass('noclick');
+                renderAnswersAsPlainText();
                 finalice = true;
             }
             else{

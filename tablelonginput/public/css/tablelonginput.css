@@ -403,3 +403,9 @@
 .student_answer{
     min-width: 324px;
 }
+
+.student_answer_plaintext{
+    min-width: 324px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
