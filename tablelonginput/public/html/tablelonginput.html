@@ -2,109 +2,52 @@
 <script>
   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);// Renderiza MathJax nuevamente
 </script>
-<div class="problem tli_block {{theme}} problems-wrapper">
+<div class="problem tli_block problems-wrapper" data-area-height="{{ area_height }}">
   <h3 class="vof-header problem-header">{{ display_name }}</h3>
   <div class="problem-progress">{{ problem_progress }}</div>
-  {% if show_correctness != 'never'  or indicator_class == 'unanswered' %}
-    <div class="status {{ indicator_class }}" id="status_{{ location }}">
+  {% if no_mas_intentos or preguntas|length == 0 %}
+    <div class="tablagrande noclick" id="longinputtable">
   {% else %}
-    <div class="status " id="status_{{ location }}">
+    <div class="tablagrande" id="longinputtable">
   {% endif %}
-  </div>
-    {% if no_mas_intentos or preguntas|length == 0 %}
-      <div class="tablagrande noclick" id="vftable2">
-    {% else %}
-      <div class="tablagrande" id="vftable2">
-    {% endif %}
-    {% if theme == 'Media' %}
-      <div class="dtrow first">
-        <div class="dtcell1 first" style="text-align:center;">
-            <strong>{{ texto_header|safe }}</strong>
-        </div>
-        <div class="dtcell2 first">
-            {{ texto_falso }}
-        </div>
-      </div>
-      {% for key, value in preguntas %}
-            <div class="dtrow">
-                <div class="dtcell1">{{value.enunciado|safe}}</div>
-                <div class="dtcell2">
-                  {% if respondido %}
+      <table class="tli-table-content">
+        {% if texto_header != '' %}
+          <thead>
+            <tr>
+              {% if numbering_type != 'none' %}
+              <th class="tli-number-cell" style="text-align:center;">{{ texto_header_num }}</th>
+              {% endif %}
+              <th class="tli-question-cell" style="text-align:center;"><strong>{{ texto_header|safe }}</strong></th>
+              <th class="tli-answer-cell"></th>
+            </tr>
+          </thead>
+        {% endif %}
+        <tbody>
+          {% for pregunta in preguntas %}
+            <tr>
+              {% if numbering_type != 'none' %}
+              <td class="tli-number-cell">{{pregunta.numbering_label}}</td>
+              {% endif %}
+              <td class="tli-question-cell">{{pregunta.enunciado|safe}}</td>
+              <td class="tli-answer-cell">
+                {% if respondido %}
                   {% for iter, ans in respuestas.items %}
-                    {% if iter == key %}
-                        {% if no_mas_intentos %}
-                          {{ ans }}
-                        {% else %}
-                          <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" >{{ ans }}</textarea>
-                        {% endif %}
+                    {% if iter == pregunta.id %}
+                      {% if no_mas_intentos %}
+                        {{ ans }}
+                      {% else %}
+                        <textarea class="student_answer" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}">{{ ans }}</textarea>
+                      {% endif %}
                     {% endif %}
                   {% endfor %}
                 {% else %}
-                  <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" />
+                  <textarea class="student_answer" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" />
                 {% endif %}
-                </div>
-            </div>
-      {% endfor %}
-    {% elif theme == 'RedFid' %}
-      {% if texto_header != '' %}
-        <div class="dtrow first">
-          <div class="dtcell1 first" style="text-align:center;">
-              <strong>{{ texto_header|safe }}</strong>
-          </div>
-          <div class="dtcell2 first">
-              {{ texto_falso }}
-          </div>
-        </div>
-        {% endif %}
-      {% for key, value in preguntas %}
-                      <div class="dtrow">
-                          <div class="dtcell1">{{value.enunciado|safe}}</div>
-                          <div class="dtcell2">
-                            {% if respondido %}
-                              {% for iter, ans in respuestas.items %}
-                                {% if iter == key %}
-                                    {% if no_mas_intentos %}
-                                      {{ ans }}
-                                    {% else %}
-                                      <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" >{{ ans }}</textarea>
-                                    {% endif %}
-                                {% endif %}
-                              {% endfor %}
-                            {% else %}
-                              <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" />
-                            {% endif %}
-                          </div>
-                      </div>
-      {% endfor %}
-    {% else %}
-      {% if texto_header != '' %}
-      <div class="dtrow">
-          <div class="dtcell1" style="text-align: center;"><strong>{{ texto_header|safe }}</strong></div>
-          <div class="dtcell2">
-          </div>
-      </div>
-      {% endif %}
-      {% for key, value in preguntas %}
-                      <div class="dtrow">
-                          <div class="dtcell1">{{value.enunciado|safe}}</div>
-                          <div class="dtcell2">
-                            {% if respondido %}
-                            {% for iter, ans in respuestas.items %}
-                              {% if iter == key %}
-                                  {% if no_mas_intentos %}
-                                    {{ ans }}
-                                  {% else %}
-                                    <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" >{{ ans }}</textarea>
-                                  {% endif %}
-                              {% endif %}
-                            {% endfor %}
-                          {% else %}
-                            <textarea class="student_answer"  pregunta-id="{{ key }}" name="{{ key }}_{{ location }}" />
-                          {% endif %}
-                          </div>
-                      </div>
-      {% endfor %}
-    {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
   <div class="divrespuestas">
@@ -113,17 +56,6 @@
         <input type="hidden" class="lasrespuestas" respuesta-id={{key}} value="{{value}}">
         {% endif %}
       {% endfor %}
-  </div>
-  <div class="elticket">
-    {%if respondido and show_correctness != 'never'%}
-      {%if score >= 1%}
-        <img src="{{ image_path }}correct-icon.png"/>
-      {% elif score <= 0 %}
-        <img src="{{ image_path }}incorrect-icon.png"/>
-      {% else %}
-        <img src="{{ image_path }}partial-icon.png"/>
-      {%endif%}
-    {% endif%}
   </div>
   <div class="action">
             {% if no_mas_intentos or preguntas|length == 0 %}
@@ -138,23 +70,5 @@
               <span id="submission_feedback_{{ location }}" class="submission-feedback">
                 {{texto_intentos}}
               </span>
-            {% if show_answers == 'Mostrar' and show_correctness != 'never' %}
-              <button class="ver_respuesta" data-checking="Cargando..." data-value="Ver Respuesta">
-                <span class="icon fa fa-info-circle" aria-hidden="true"></span></br>
-                <span>Mostrar<br/>Respuesta</span>
-              </button>
-            {% elif show_answers == 'Finalizado' and no_mas_intentos and show_correctness != 'never' %}
-              <button class="ver_respuesta" data-checking="Cargando..." data-value="Ver Respuesta">
-                <span class="icon fa fa-info-circle" aria-hidden="true"></span></br>
-                <span>Mostrar<br/>Respuesta</span>
-              </button>
-            {% elif show_answers == 'Finalizado' and respondido and nro_de_intentos <= 0 and show_correctness != 'never' %}
-              <button class="ver_respuesta" data-checking="Cargando..." data-value="Ver Respuesta">
-                <span class="icon fa fa-info-circle" aria-hidden="true"></span></br>
-                <span>Mostrar<br/>Respuesta</span>
-              </button>
-            {% endif %}
   </div>
-      <div class="notificacion" tabindex="-1">
-      </div>
 </div>

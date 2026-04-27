@@ -3,6 +3,7 @@
 """Bloque Tablas de entradas de texto"""
 
 import pkg_resources
+import re
 
 
 from xblock.core import XBlock
@@ -18,6 +19,29 @@ import pytz
 utc=pytz.UTC
 
 loader = ResourceLoader(__name__)
+
+def number_to_letter(n):
+    """Convert number to letter (1=a, 2=b, etc.)."""
+    if n < 1:
+        return ''
+    result = ''
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        result = chr(97 + remainder) + result
+    return result
+
+def number_to_roman(n):
+    """Convert number to roman numeral in lowercase."""
+    if not 0 < n < 4000:
+        return ''
+    ints = (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1)
+    nums = ('m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i')
+    result = []
+    for i in range(len(ints)):
+        count = int(n / ints[i])
+        result.append(nums[i] * count)
+        n -= ints[i] * count
+    return ''.join(result)
 
 @XBlock.needs('i18n')
 class tablelonginputXBlock(XBlock):
@@ -51,6 +75,13 @@ class tablelonginputXBlock(XBlock):
         default=""
     )
 
+    texto_header_num = String(
+        display_name="Header de la numeración",
+        help="Texto que se mostrará en la celda de la numeración si se utiliza.",
+        scope=Scope.settings,
+        default="N°",
+    )
+
     texto_correcto = String(
         display_name="Falso",
         help="Texto que aparece al tener todas buenas",
@@ -75,7 +106,7 @@ class tablelonginputXBlock(XBlock):
     #preguntas
     preguntas = Dict(default={'1':{'enunciado':'¿1+1=2?'}, '2':{'enunciado':'Un triángulo tiene 4 lados'}},
                  scope=Scope.settings,
-                 help="Lista de preguntas del V o F")
+                 help="Lista de preguntas")
     #respuestas del estudiante
     #WARNING: por algún motivo dejar esto default vacio dio problemas
     respuestas = Dict(default={'1':'nada','2':'nada'},
@@ -85,13 +116,6 @@ class tablelonginputXBlock(XBlock):
     respondido = Boolean(help="Respondió?", default=False,
         scope=Scope.user_state)
 
-    theme = String(
-        display_name = "Estilo",
-        help = "Cambiar estilo de la pregunta",
-        default = "SumaySigue",
-        values = ["SumaySigue", "Media","RedFid"],
-        scope = Scope.settings
-    )
     
     score = Float(
         default=0.0,
@@ -106,13 +130,12 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings,
     )
 
-    max_attempts = Integer(
-        display_name='Nro. de Intentos',
-        help='Entero que representa cuantas veces se puede responder problema',
-        default=2,
-        values={'min': 0},
+    area_height = String(
+        display_name='Altura de las areas de texto',
+        help='Altura de las areas de texto',
+        default='116px',
         scope=Scope.settings,
-    )
+    )    
 
     attempts = Integer(
         display_name='Intentos',
@@ -131,6 +154,28 @@ class tablelonginputXBlock(XBlock):
         scope = Scope.settings
     )
 
+    numbering_type = String(
+        display_name="Tipo de numeración",
+        help="Tipo de numeración para el listado de preguntas",
+        default="none",
+        values=["numbers", "numbers_zero", "letters", "roman", "none"],
+        scope=Scope.settings
+    )
+
+    pretext_num = String(
+        display_name="Texto antes de la numeración",
+        help="Texto que se mostrará antes de la numeración",
+        default="",
+        scope=Scope.settings
+    )
+
+    postext_num = String(
+        display_name="Texto después de la numeración",
+        help="Texto que se mostrará después de la numeración",
+        default=". ",
+        scope=Scope.settings
+    )
+
     last_submission_time = Date(
         help= "Last submission time",
         scope=Scope.user_state)
@@ -138,6 +183,41 @@ class tablelonginputXBlock(XBlock):
     has_score = True
 
     icon_class = "problem"
+
+    @staticmethod
+    def normalize_area_height(value):
+        """
+        Returns a valid CSS height value for answer textareas.
+        """
+        default_height = tablelonginputXBlock.area_height.default
+        if value is None:
+            return default_height
+        normalized_value = str(value).strip()
+        if not normalized_value:
+            return default_height
+        if re.match(r'^\d+(\.\d+)?(px|em|rem|vh|vw|%)$', normalized_value):
+            return normalized_value
+        if re.match(r'^\d+(\.\d+)?$', normalized_value):
+            return normalized_value + 'px'
+        return default_height
+
+    @staticmethod
+    def build_numbering_label(position, numbering_type, pretext_num, postext_num, texto_header_num):
+        """
+        Returns numbering label string for a 1-based position.
+        """
+        value = ""
+        if numbering_type == "numbers":
+            value = str(position)
+        elif numbering_type == "numbers_zero":
+            value = str(position - 1)
+        elif numbering_type == "letters":
+            value = number_to_letter(position)
+        elif numbering_type == "roman":
+            value = number_to_roman(position)
+        else:
+            return ""
+        return str(pretext_num) + value + str(postext_num)
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -174,8 +254,15 @@ class tablelonginputXBlock(XBlock):
         Vista estudiante
         """
         #Tuve que pasar las preguntas a una lista para ordenarlas, TO DO: pasar a listas o ver que es mas eficiente
-        lista_pregs = [ [k,v] for k, v in list(self.preguntas.items()) ]
-        lista_pregs = sorted(lista_pregs, key=lambda x: int(x[0]))
+        lista_pregs_raw = [ [k,v] for k, v in list(self.preguntas.items()) ]
+        lista_pregs_raw = sorted(lista_pregs_raw, key=lambda x: int(x[0]))
+        lista_pregs = []
+        for idx, preg in enumerate(lista_pregs_raw, 1):
+            lista_pregs.append({
+                'id': preg[0],
+                'enunciado': preg[1]['enunciado'],
+                'numbering_label': self.build_numbering_label(idx, self.numbering_type, self.pretext_num, self.postext_num, self.texto_header_num)
+            })
         texto_intentos = ''
         no_mas_intentos = False
 
@@ -186,15 +273,11 @@ class tablelonginputXBlock(XBlock):
             if self.attempts >= self.max_attempts:
                 no_mas_intentos = True
 
-        #status respuesta
-        indicator_class = self.get_indicator_class()
-
         context.update(
             {
                 'display_name': self.display_name,
                 'preguntas': lista_pregs,
                 'respuestas': self.respuestas,
-                'theme': self.theme,
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
                 'texto_correcto': self.texto_correcto,
@@ -204,13 +287,15 @@ class tablelonginputXBlock(XBlock):
                 'nro_de_intentos': self.max_attempts,
                 'score': self.score,
                 'respondido': self.respondido,
-                'show_answers': self.show_answer,
                 'problem_progress': self.get_problem_progress(),
-                'indicator_class': indicator_class,
                 'image_path' : self.runtime.local_resource_url(self, 'public/images/'),
                 'location': str(self.location).split('@')[-1],
-                'show_correctness': self.get_show_correctness(),
-                'is_past_due': self.get_is_past_due
+                'is_past_due': self.get_is_past_due,
+                'area_height': self.normalize_area_height(self.area_height),
+                'numbering_type': self.numbering_type,
+                'texto_header_num': self.texto_header_num,
+                'pretext_num': self.pretext_num,
+                'postext_num': self.postext_num,
             }
         )
         template = loader.render_django_template(
@@ -247,9 +332,11 @@ class tablelonginputXBlock(XBlock):
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
                 'weight': self.weight,
-                'show_answers': self.show_answer,
-                'theme': self.theme,
-                'nro_de_intentos': self.max_attempts
+                'nro_de_intentos': self.max_attempts,
+                'area_height': self.normalize_area_height(self.area_height),
+                'numbering_type': self.numbering_type,
+                'pretext_num': self.pretext_num,
+                'postext_num': self.postext_num,
             }
         )
         template = loader.render_django_template(
@@ -314,9 +401,6 @@ class tablelonginputXBlock(XBlock):
             #ya respondi
             self.respondido = True
 
-            #status respuesta
-            indicator_class = self.get_indicator_class()
-
             self.last_submission_time = datetime.datetime.now(utc)
 
             return {
@@ -324,9 +408,6 @@ class tablelonginputXBlock(XBlock):
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
                     'intentos': self.attempts, 
-                    'indicator_class':indicator_class,
-                    'show_correctness': self.get_show_correctness(),
-                    'show_answers': self.show_answer,
                     'last_submission_time': self.last_submission_time.isoformat()
                     }
         else:
@@ -335,22 +416,8 @@ class tablelonginputXBlock(XBlock):
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
                     'intentos': self.attempts, 
-                    'indicator_class': self.get_indicator_class(),
-                    'show_correctness': self.get_show_correctness(),
-                    'show_answers': self.show_answer,
                     'last_submission_time': self.last_submission_time
                     }
-    
-    @XBlock.json_handler
-    def mostrar_respuesta(self, data, suffix=''):
-        """
-        Mostrar las respuestas
-        """
-        max_attempts_fixed = self.max_attempts if self.max_attempts else self.attempts + 1 # Fix max attempts None
-        if (self.attempts >= max_attempts_fixed and self.show_answer == 'Finalizado') or self.show_answer == 'Mostrar':
-            return {'preguntas': self.preguntas}
-        else:
-            return {}
 
 
     @XBlock.json_handler
@@ -368,8 +435,10 @@ class tablelonginputXBlock(XBlock):
         self.texto_verdadero = data.get('texto_verdadero')
         self.texto_falso = data.get('texto_falso')
         self.texto_header = data.get('texto_header')
-        self.theme = data.get('theme')
-        self.show_answer = data.get('show_answers')
+        self.numbering_type = data.get('numbering_type', self.numbering_type)
+        self.pretext_num = data.get('pretext_num', self.pretext_num)
+        self.postext_num = data.get('postext_num', self.postext_num)
+        self.area_height = self.normalize_area_height(data.get('area_height'))
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))
         if data.get('nro_de_intentos') and int(data.get('nro_de_intentos')) > 0:

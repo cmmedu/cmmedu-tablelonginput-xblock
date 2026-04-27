@@ -32,33 +32,49 @@
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="show_answers">Mostrar Respuestas</label>
-        <select class="show_answers" name="show_answers" show-answers-id="{{key}}">
-          <option value="Mostrar" {% if show_answers == 'Mostrar' %}selected{% endif %}>
-            Mostrar
-          </option>
-          <option value="Finalizado" {% if show_answers == 'Finalizado' %}selected{% endif %}>
-            Finalizado
-          </option>
-          <option value="Ocultar" {% if show_answers == 'Ocultar' %}selected{% endif %}>
-            Ocultar
-          </option>
-        </select>
+        <label class="label setting-label" for="area_height">Altura del área de respuesta</label>
+        <input class="input setting-input" name="area_height" id="area_height" value="{{area_height}}" type="text" />
+      </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="theme">Estilo</label>
-        <select class="theme" name="theme">
-                  <option value="SumaySigue" {% if theme == 'SumaySigue' %}selected{% endif %}>
-                    SumaySigue (Default)
-                  </option>
-                  <option value="Media" {% if theme == 'Media' %}selected{% endif %}>
-                    Media
-                  </option>
-                  <option value="RedFid" {% if theme == 'RedFid' %}selected{% endif %}>
-                    RedFid
-                  </option>
-              </select>
+        <label class="label setting-label" for="numbering_type">Tipo de numeración</label>
+        <select class="numbering_type" name="numbering_type">
+          <option value="none" {% if numbering_type == 'none' %}selected{% endif %}>
+            Sin numeración
+          </option>
+          <option value="numbers" {% if numbering_type == 'numbers' %}selected{% endif %}>
+            1, 2, 3...
+          </option>
+          <option value="numbers_zero" {% if numbering_type == 'numbers_zero' %}selected{% endif %}>
+            0, 1, 2...
+          </option>
+          <option value="letters" {% if numbering_type == 'letters' %}selected{% endif %}>
+            a, b, c...
+          </option>
+          <option value="roman" {% if numbering_type == 'roman' %}selected{% endif %}>
+            i, ii, iii...
+          </option>
+        </select>
+      </div>
+    </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="texto_header_num">Texto de cabecera de la numeración</label>
+        <input class="input setting-input" name="texto_header_num" id="texto_header_num" value="{{texto_header_num}}" type="text" />
+      </div>
+    </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="pretext_num">Texto antes de la numeración</label>
+        <input class="input setting-input" name="pretext_num" id="pretext_num" value="{{pretext_num}}" type="text" />
+      </div>
+    </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="postext_num">Texto después de la numeración</label>
+        <input class="input setting-input" name="postext_num" id="postext_num" value="{{postext_num}}" type="text" />
+      </div>
     </li>
     <li class="field comp-setting-entry is-set" id="listapreguntas">
       {% for key, value in preguntas %}

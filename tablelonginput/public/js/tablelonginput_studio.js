@@ -21,8 +21,10 @@ function TLIEditBlock(runtime, element) {
         texto_header: $(element).find('input[name=texto_header]').val(),
         weight: $(element).find('input[name=weight]').val(),
         nro_de_intentos: $(element).find('input[name=nro_de_intentos]').val(),
-        show_answers: $(element).find('select.show_answers').val(),
-        theme: $(element).find('select.theme').val(),
+        area_height: $(element).find('input[name=area_height]').val(),
+        numbering_type: $(element).find('select.numbering_type').val(),
+        pretext_num: $(element).find('input[name=pretext_num]').val(),
+        postext_num: $(element).find('input[name=postext_num]').val(),
         preguntas: pregs
       };
       //console.log(data)
