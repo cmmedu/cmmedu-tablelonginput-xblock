@@ -202,7 +202,7 @@ class tablelonginputXBlock(XBlock):
         return default_height
 
     @staticmethod
-    def build_numbering_label(position, numbering_type, pretext_num, postext_num, texto_header_num):
+    def build_numbering_label(position, numbering_type, pretext_num, postext_num):
         """
         Returns numbering label string for a 1-based position.
         """
@@ -261,7 +261,7 @@ class tablelonginputXBlock(XBlock):
             lista_pregs.append({
                 'id': preg[0],
                 'enunciado': preg[1]['enunciado'],
-                'numbering_label': self.build_numbering_label(idx, self.numbering_type, self.pretext_num, self.postext_num, self.texto_header_num)
+                'numbering_label': self.build_numbering_label(idx, self.numbering_type, self.pretext_num, self.postext_num)
             })
         texto_intentos = ''
         no_mas_intentos = False
@@ -331,6 +331,7 @@ class tablelonginputXBlock(XBlock):
                 'location': self.location,
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
+                'texto_header_num': self.texto_header_num,
                 'weight': self.weight,
                 'nro_de_intentos': self.max_attempts,
                 'area_height': self.normalize_area_height(self.area_height),
@@ -435,6 +436,7 @@ class tablelonginputXBlock(XBlock):
         self.texto_verdadero = data.get('texto_verdadero')
         self.texto_falso = data.get('texto_falso')
         self.texto_header = data.get('texto_header')
+        self.texto_header_num = data.get('texto_header_num', self.texto_header_num)
         self.numbering_type = data.get('numbering_type', self.numbering_type)
         self.pretext_num = data.get('pretext_num', self.pretext_num)
         self.postext_num = data.get('postext_num', self.postext_num)

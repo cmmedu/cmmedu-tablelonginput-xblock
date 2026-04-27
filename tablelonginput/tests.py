@@ -120,6 +120,7 @@ class TliIXblockTestCase(unittest.TestCase):
             'texto_verdadero': 'V',
             'texto_falso': 'Respuesta',
             'texto_header': '',
+            'texto_header_num': 'Nº',
             'weight': 1,
             'nro_de_intentos': 1,
             'numbering_type': 'letters',
@@ -136,6 +137,7 @@ class TliIXblockTestCase(unittest.TestCase):
         self.assertEqual(self.xblock.numbering_type, 'letters')
         self.assertEqual(self.xblock.pretext_num, '[')
         self.assertEqual(self.xblock.postext_num, '] ')
+        self.assertEqual(self.xblock.texto_header_num, 'Nº')
 
     def test_answers_with_more_questions(self):
         #agrego preguntas

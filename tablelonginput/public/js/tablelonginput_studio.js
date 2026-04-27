@@ -19,6 +19,7 @@ function TLIEditBlock(runtime, element) {
         texto_verdadero: $(element).find('input[name=texto_verdadero]').val(),
         texto_falso: $(element).find('input[name=texto_falso]').val(),
         texto_header: $(element).find('input[name=texto_header]').val(),
+        texto_header_num: $(element).find('input[name=texto_header_num]').val(),
         weight: $(element).find('input[name=weight]').val(),
         nro_de_intentos: $(element).find('input[name=nro_de_intentos]').val(),
         area_height: $(element).find('input[name=area_height]').val(),

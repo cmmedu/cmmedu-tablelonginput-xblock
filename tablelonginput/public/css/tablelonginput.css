@@ -1,4 +1,4 @@
-/* CSS for VoFXBlock */
+/* CSS for TableLongInputBlock */
 
 .tli_block .count {
     font-weight: bold;
@@ -68,12 +68,6 @@
     pointer-events:none;
 }
 
-.tli_block .vof-header{
-    margin-bottom: 10px;
-    font-size: 1.35em;
-    color: #4c4c4c;
-}
-
 .tli_block .problem-progress{
     color: #666;
     font-size: 0.875em;
@@ -132,12 +126,30 @@
     width: 350px;
 }
 
-.tli_block .tli-table-content tr:first-child > *:first-child {
+/* Sin thead: esquinas superiores en la primera fila del tbody */
+.tli_block .tli-table-content > tbody:first-child > tr:first-child > *:first-child {
     border-top-left-radius: 10px;
 }
 
-.tli_block .tli-table-content tr:first-child > *:last-child {
+.tli_block .tli-table-content > tbody:first-child > tr:first-child > *:last-child {
     border-top-right-radius: 10px;
+}
+
+/* Con thead: esquinas superiores solo en el encabezado (no en la primera fila de datos) */
+.tli_block .tli-table-content > thead > tr:first-child > *:first-child {
+    border-top-left-radius: 10px;
+}
+
+.tli_block .tli-table-content > thead > tr:first-child > *:last-child {
+    border-top-right-radius: 10px;
+}
+
+.tli_block .tli-table-content > thead + tbody > tr:first-child > *:first-child {
+    border-top-left-radius: 0;
+}
+
+.tli_block .tli-table-content > thead + tbody > tr:first-child > *:last-child {
+    border-top-right-radius: 0;
 }
 
 .tli_block .tli-table-content tr:last-child > *:first-child {
@@ -149,7 +161,8 @@
 }
 
 .tli_block .tli-table-content thead .tli-question-cell,
-.tli_block .tli-table-content thead .tli-answer-cell {
+.tli_block .tli-table-content thead .tli-answer-cell,
+.tli_block .tli-table-content thead .tli-number-cell {
     padding: 10px 25px;
     background-color: #F0F0F1;
 }
