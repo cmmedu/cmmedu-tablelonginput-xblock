@@ -102,7 +102,8 @@
 
 .tli_block .tli-table-content .tli-number-cell,
 .tli_block .tli-table-content .tli-question-cell,
-.tli_block .tli-table-content .tli-answer-cell {
+.tli_block .tli-table-content .tli-answer-cell,
+.tli_block .tli-table-content .tli-content-cell {
     text-align: left;
     vertical-align: middle;
     background-color: #fff;
@@ -124,6 +125,19 @@
 
 .tli_block .tli-table-content .tli-answer-cell {
     width: 350px;
+}
+
+.tli_block .tli-table-content .tli-content-cell {
+    width: auto;
+}
+
+.tli_block .tli-table-content .tli-cell-prompt {
+    margin-bottom: 12px;
+}
+
+.tli_block .tli-table-content .student_answer {
+    width: 100%;
+    min-width: 100%;
 }
 
 /* Sin thead: esquinas superiores en la primera fila del tbody */

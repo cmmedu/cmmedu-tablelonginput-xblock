@@ -76,12 +76,33 @@
         <input class="input setting-input" name="postext_num" id="postext_num" value="{{postext_num}}" type="text" />
       </div>
     </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="columnas_por_fila">Celdas por fila (sin contar numeración)</label>
+        <select class="columnas_por_fila" name="columnas_por_fila" id="columnas_por_fila">
+          <option value="1" {% if columnas_por_fila == 1 %}selected{% endif %}>1</option>
+          <option value="2" {% if columnas_por_fila == 2 %}selected{% endif %}>2</option>
+          <option value="3" {% if columnas_por_fila == 3 %}selected{% endif %}>3</option>
+        </select>
+      </div>
+    </li>
     <li class="field comp-setting-entry is-set" id="listapreguntas">
       {% for key, value in preguntas %}
         <div class="div-pregunta-{{key}}">
           <div class="wrapper-comp-setting">
-            <label class="label setting-label" for="pregunta">Pregunta</label>
-            <input class="input setting-input" name="pregunta" pregunta-id="{{key}}" value="{{value.enunciado}}" type="text" />
+            <label class="label setting-label" for="tipo_celda">Tipo de celda</label>
+            <select class="input setting-input" name="tipo_celda" pregunta-id="{{key}}">
+              <option value="texto" {% if value.tipo_celda|default:'input' == 'texto' %}selected{% endif %}>Texto</option>
+              <option value="input" {% if value.tipo_celda|default:'input' == 'input' %}selected{% endif %}>Input</option>
+            </select>
+          </div>
+          <div class="wrapper-comp-setting cell-texto-field" pregunta-id="{{key}}">
+            <label class="label setting-label" for="texto_celda">Texto (admite HTML)</label>
+            <input class="input setting-input" name="texto_celda" pregunta-id="{{key}}" value="{{ value.texto_celda|default:value.enunciado }}" type="text" />
+          </div>
+          <div class="wrapper-comp-setting cell-input-field" pregunta-id="{{key}}">
+            <label class="label setting-label" for="texto_input">Texto antes del input (Vacio no se texto)</label>
+            <input class="input setting-input" name="texto_input" pregunta-id="{{key}}" value="{{ value.texto_input|default:value.enunciado }}" type="text" />
           </div>
           <div class="action-item">
             <a href="#" borrar-id="{{key}}" class="button action-primary borrar-button">Borrar</a>
@@ -99,7 +120,7 @@
         <a href="#" class="button cancel-button">Cancel</a>
       </li>
       <li class="action-item">
-          <a href="#" class="button add-button">Agregar otra pregunta</a>
+          <a href="#" class="button add-button">Agregar otra fila</a>
       </li>
     </ul>
   </div>

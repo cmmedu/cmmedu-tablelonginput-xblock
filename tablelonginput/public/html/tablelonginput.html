@@ -17,33 +17,42 @@
               {% if numbering_type != 'none' %}
               <th class="tli-number-cell" style="text-align:center;">{{ texto_header_num }}</th>
               {% endif %}
-              <th class="tli-question-cell" style="text-align:center;"><strong>{{ texto_header|safe }}</strong></th>
-              <th class="tli-answer-cell"></th>
+              <th class="tli-question-cell" colspan="{{ columnas_por_fila }}" style="text-align:center;"><strong>{{ texto_header|safe }}</strong></th>
             </tr>
           </thead>
         {% endif %}
         <tbody>
-          {% for pregunta in preguntas %}
+          {% for fila in filas_preguntas %}
             <tr>
               {% if numbering_type != 'none' %}
-              <td class="tli-number-cell">{{pregunta.numbering_label}}</td>
+              <td class="tli-number-cell">{{ fila.row_numbering_label }}</td>
               {% endif %}
-              <td class="tli-question-cell">{{pregunta.enunciado|safe}}</td>
-              <td class="tli-answer-cell">
-                {% if respondido %}
-                  {% for iter, ans in respuestas.items %}
-                    {% if iter == pregunta.id %}
-                      {% if no_mas_intentos %}
-                        {{ ans }}
-                      {% else %}
-                        <textarea class="student_answer" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}">{{ ans }}</textarea>
-                      {% endif %}
+              {% for pregunta in fila.cells %}
+                <td class="tli-content-cell">
+                  {% if pregunta.tipo_celda == 'texto' %}
+                    <div class="tli-cell-prompt">{{ pregunta.texto_celda|safe }}</div>
+                  {% else %}
+                    {% if pregunta.texto_input %}
+                      <div class="tli-cell-prompt">{{ pregunta.texto_input|safe }}</div>
                     {% endif %}
-                  {% endfor %}
-                {% else %}
-                  <textarea class="student_answer" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" />
-                {% endif %}
-              </td>
+                    <div class="tli-cell-input">
+                      {% if respondido %}
+                        {% for iter, ans in respuestas.items %}
+                          {% if iter == pregunta.id %}
+                            {% if no_mas_intentos %}
+                              {{ ans }}
+                            {% else %}
+                              <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" value="{{ ans }}" />
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      {% else %}
+                        <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" />
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </td>
+              {% endfor %}
             </tr>
           {% endfor %}
         </tbody>

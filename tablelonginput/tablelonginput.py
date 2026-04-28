@@ -176,6 +176,14 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings
     )
 
+    columnas_por_fila = Integer(
+        display_name="Cantidad de celdas por fila",
+        help="Cantidad de celdas de contenido por fila (sin contar numeración)",
+        default=2,
+        values={'min': 1, 'max': 3},
+        scope=Scope.settings,
+    )
+
     last_submission_time = Date(
         help= "Last submission time",
         scope=Scope.user_state)
@@ -219,6 +227,17 @@ class tablelonginputXBlock(XBlock):
             return ""
         return str(pretext_num) + value + str(postext_num)
 
+    @staticmethod
+    def normalize_column_count(value):
+        """
+        Returns a valid number of content cells per row.
+        """
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return 2
+        return max(1, min(3, parsed))
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -257,11 +276,28 @@ class tablelonginputXBlock(XBlock):
         lista_pregs_raw = [ [k,v] for k, v in list(self.preguntas.items()) ]
         lista_pregs_raw = sorted(lista_pregs_raw, key=lambda x: int(x[0]))
         lista_pregs = []
-        for idx, preg in enumerate(lista_pregs_raw, 1):
+        for preg in lista_pregs_raw:
+            preg_data = preg[1]
+            tipo_celda = preg_data.get('tipo_celda', 'input')
+            legacy_enunciado = preg_data.get('enunciado', '')
+            texto_celda = preg_data.get('texto_celda', legacy_enunciado)
+            texto_input = preg_data.get('texto_input', legacy_enunciado if tipo_celda == 'input' else '')
             lista_pregs.append({
                 'id': preg[0],
-                'enunciado': preg[1]['enunciado'],
-                'numbering_label': self.build_numbering_label(idx, self.numbering_type, self.pretext_num, self.postext_num)
+                'tipo_celda': tipo_celda,
+                'texto_celda': texto_celda,
+                'texto_input': texto_input,
+            })
+        columnas_por_fila = self.normalize_column_count(self.columnas_por_fila)
+        filas_preguntas = []
+        for idx in range(0, len(lista_pregs), columnas_por_fila):
+            fila_celdas = lista_pregs[idx:idx + columnas_por_fila]
+            fila_pos = (idx // columnas_por_fila) + 1
+            filas_preguntas.append({
+                'row_numbering_label': self.build_numbering_label(
+                    fila_pos, self.numbering_type, self.pretext_num, self.postext_num
+                ),
+                'cells': fila_celdas,
             })
         texto_intentos = ''
         no_mas_intentos = False
@@ -277,6 +313,7 @@ class tablelonginputXBlock(XBlock):
             {
                 'display_name': self.display_name,
                 'preguntas': lista_pregs,
+                'filas_preguntas': filas_preguntas,
                 'respuestas': self.respuestas,
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
@@ -296,6 +333,7 @@ class tablelonginputXBlock(XBlock):
                 'texto_header_num': self.texto_header_num,
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
+                'columnas_por_fila': columnas_por_fila,
             }
         )
         template = loader.render_django_template(
@@ -338,6 +376,7 @@ class tablelonginputXBlock(XBlock):
                 'numbering_type': self.numbering_type,
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
+                'columnas_por_fila': self.normalize_column_count(self.columnas_por_fila),
             }
         )
         template = loader.render_django_template(
@@ -430,7 +469,13 @@ class tablelonginputXBlock(XBlock):
         pregs = data.get('preguntas')
         for p in pregs:
             #WARNING: Aquí aunque castee a int, queda como string la id, me rendi por eso ocupo string
-            nuevas_pregs[p['id']] = {'enunciado':p['enunciado']}
+            tipo_celda = p.get('tipo_celda', 'input')
+            nuevas_pregs[p['id']] = {
+                'enunciado': p.get('texto_celda', ''),
+                'tipo_celda': tipo_celda,
+                'texto_celda': p.get('texto_celda', ''),
+                'texto_input': p.get('texto_input', '')
+            }
 
         self.display_name = data.get('display_name')
         self.texto_verdadero = data.get('texto_verdadero')
@@ -440,6 +485,7 @@ class tablelonginputXBlock(XBlock):
         self.numbering_type = data.get('numbering_type', self.numbering_type)
         self.pretext_num = data.get('pretext_num', self.pretext_num)
         self.postext_num = data.get('postext_num', self.postext_num)
+        self.columnas_por_fila = self.normalize_column_count(data.get('columnas_por_fila', self.columnas_por_fila))
         self.area_height = self.normalize_area_height(data.get('area_height'))
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))

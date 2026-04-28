@@ -4,13 +4,13 @@ function TLIXBlock(runtime, element, settings) {
     var $ = window.jQuery;
     var $element = $(element);
     var buttonCheck = $element.find('.check');
-    var inputs = $element.find('.student_answer');
+    var textareas = $element.find('textarea.student_answer');
     var subFeedback = $element.find('.submission-feedback');
     var areaHeight = $element.data('area-height');
     var handlerUrl = runtime.handlerUrl(element, 'responder');
 
     if (areaHeight) {
-        inputs.css('height', areaHeight);
+        textareas.css('height', areaHeight);
     }
 
     function renderAnswersAsPlainText() {
