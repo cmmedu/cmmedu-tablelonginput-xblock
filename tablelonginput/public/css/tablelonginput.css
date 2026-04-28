@@ -144,6 +144,14 @@
     border-top-right-radius: 10px;
 }
 
+.tli_block .tli-table-content > thead > tr > *:first-child {
+    border-bottom-left-radius: 0;
+}
+
+.tli_block .tli-table-content > thead > tr > *:last-child {
+    border-bottom-right-radius: 0;  
+}
+
 .tli_block .tli-table-content > thead + tbody > tr:first-child > *:first-child {
     border-top-left-radius: 0;
 }
@@ -152,11 +160,11 @@
     border-top-right-radius: 0;
 }
 
-.tli_block .tli-table-content tr:last-child > *:first-child {
+.tli_block .tli-table-content > tbody > tr:last-child > *:first-child {
     border-bottom-left-radius: 10px;
 }
 
-.tli_block .tli-table-content tr:last-child > *:last-child {
+.tli_block .tli-table-content > tbody > tr:last-child > *:last-child {
     border-bottom-right-radius: 10px;
 }
 
