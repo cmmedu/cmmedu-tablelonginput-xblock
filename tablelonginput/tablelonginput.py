@@ -238,6 +238,17 @@ class tablelonginputXBlock(XBlock):
             return 2
         return max(1, min(3, parsed))
 
+    @staticmethod
+    def normalize_required_flag(value):
+        """
+        Returns True when a per-cell required flag is enabled.
+        """
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('1', 'true', 'yes', 'on')
+        return False
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -282,11 +293,13 @@ class tablelonginputXBlock(XBlock):
             legacy_enunciado = preg_data.get('enunciado', '')
             texto_celda = preg_data.get('texto_celda', legacy_enunciado)
             texto_input = preg_data.get('texto_input', legacy_enunciado if tipo_celda == 'input' else '')
+            obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
             lista_pregs.append({
                 'id': preg[0],
                 'tipo_celda': tipo_celda,
                 'texto_celda': texto_celda,
                 'texto_input': texto_input,
+                'obligatoria': obligatoria,
             })
         columnas_por_fila = self.normalize_column_count(self.columnas_por_fila)
         filas_preguntas = []
@@ -387,6 +400,9 @@ class tablelonginputXBlock(XBlock):
         frag = self.build_fragment(
             template,
             initialize_js_func='TLIEditBlock',
+            additional_css=[
+                'public/css/tablelonginput.css'
+            ],
             additional_js=[
                 'public/js/tablelonginput_studio.js',
             ],
@@ -414,6 +430,21 @@ class tablelonginputXBlock(XBlock):
                 miresp = e['value']
                 nuevas_resps[idpreg] = miresp
                 buenas+=1
+
+            for idpreg, preg_data in self.preguntas.items():
+                if preg_data.get('tipo_celda', 'input') != 'input':
+                    continue
+                if not self.normalize_required_flag(preg_data.get('obligatoria', False)):
+                    continue
+                respuesta = nuevas_resps.get(idpreg, '')
+                if not str(respuesta).strip():
+                    return {
+                        'texto': 'Debe completar todas las celdas obligatorias antes de enviar.',
+                        'score': self.score,
+                        'nro_de_intentos': self.max_attempts,
+                        'intentos': self.attempts,
+                        'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                    }
 
 
             self.respuestas = nuevas_resps
@@ -474,7 +505,8 @@ class tablelonginputXBlock(XBlock):
                 'enunciado': p.get('texto_celda', ''),
                 'tipo_celda': tipo_celda,
                 'texto_celda': p.get('texto_celda', ''),
-                'texto_input': p.get('texto_input', '')
+                'texto_input': p.get('texto_input', ''),
+                'obligatoria': self.normalize_required_flag(p.get('obligatoria', False))
             }
 
         self.display_name = data.get('display_name')

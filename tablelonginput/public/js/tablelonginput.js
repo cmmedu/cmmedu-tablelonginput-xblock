@@ -47,7 +47,7 @@ function TLIXBlock(runtime, element, settings) {
         buttonCheck.html("<span>" + buttonCheck[0].dataset.value + "</span>");
     }
 
-    inputs.click(function(eventObject) {
+    textareas.on('input', function(eventObject) {
         if (!settings.is_past_due) {
             buttonCheck.attr("disabled", false);
         }
@@ -57,6 +57,17 @@ function TLIXBlock(runtime, element, settings) {
 
     buttonCheck.click(function(eventObject) {
         eventObject.preventDefault();
+        var missingRequired = false;
+        $element.find('.student_answer[required]').each(function() {
+            if (!$(this).val().trim()) {
+                missingRequired = true;
+                return false;
+            }
+        });
+        if (missingRequired) {
+            subFeedback.text('Debe completar todas las celdas obligatorias antes de enviar.');
+            return;
+        }
         buttonCheck.html("<span>" + buttonCheck[0].dataset.checking + "</span>");
         buttonCheck.attr("disabled", true);
         if ($.isFunction(runtime.notify)) {

@@ -23,7 +23,7 @@ function TLIEditBlock(runtime, element) {
 
     function buildQuestionHtml(id) {
       var nuevaPregunta = '';
-      nuevaPregunta += '<div class="div-pregunta-'+id+'">';
+      nuevaPregunta += '<div class="tli-studio-cell div-pregunta-'+id+'">';
       nuevaPregunta += '<div class="wrapper-comp-setting">';
       nuevaPregunta += '<label class="label setting-label" for="tipo_celda">Tipo de celda</label>';
       nuevaPregunta += '<select class="input setting-input" name="tipo_celda" pregunta-id="'+id+'">';
@@ -39,8 +39,10 @@ function TLIEditBlock(runtime, element) {
       nuevaPregunta += '<label class="label setting-label" for="texto_input">Texto antes del input (opcional, admite HTML)</label>';
       nuevaPregunta += '<input class="input setting-input" name="texto_input" pregunta-id="'+id+'" value="" type="text" />';
       nuevaPregunta += '</div>';
-      nuevaPregunta += '<div class="action-item">';
-      nuevaPregunta += '<a href="#" borrar-id="'+id+'" class="button action-primary borrar-button">Borrar</a>';
+      nuevaPregunta += '<div class="wrapper-comp-setting cell-required-field" pregunta-id="'+id+'">';
+      nuevaPregunta += '<label class="label setting-label" for="obligatoria_'+id+'">';
+      nuevaPregunta += '<input class="input setting-input" name="obligatoria" id="obligatoria_'+id+'" pregunta-id="'+id+'" type="checkbox" /> Obligatoria';
+      nuevaPregunta += '</label>';
       nuevaPregunta += '</div>';
       nuevaPregunta += '</div>';
       return nuevaPregunta;
@@ -48,6 +50,40 @@ function TLIEditBlock(runtime, element) {
 
     function appendQuestionCell(id) {
       $(element).find('#listapreguntas').append(buildQuestionHtml(id));
+    }
+
+    function rebuildRowsLayout() {
+      var columnasPorFila = normalizeColumnCount($(element).find('select.columnas_por_fila').val());
+      var $listaPreguntas = $(element).find('#listapreguntas');
+      var $celdas = $listaPreguntas.find('.tli-studio-cell').detach();
+
+      $listaPreguntas.empty();
+      for (var i = 0; i < $celdas.length; i += columnasPorFila) {
+        var numeroFila = Math.floor(i / columnasPorFila) + 1;
+        var $fila = $('<div class="tli-studio-row"></div>');
+        $fila.append('<div class="tli-studio-row-title">Fila ' + numeroFila + '</div>');
+
+        for (var j = 0; j < columnasPorFila; j++) {
+          var indiceCelda = i + j;
+          if (indiceCelda < $celdas.length) {
+            $fila.append($celdas.eq(indiceCelda));
+          }
+        }
+
+        $fila.append(
+          '<div class="tli-studio-row-actions"><a href="#" class="button action-primary borrar-fila-button">Eliminar Fila ' + numeroFila + '</a></div>'
+        );
+        $listaPreguntas.append($fila);
+      }
+    }
+
+    function bindRowDeleteButtons() {
+      $(element).find('.borrar-fila-button').off('click').on('click', function(eventObject) {
+        eventObject.preventDefault();
+        $(this).closest('.tli-studio-row').remove();
+        rebuildRowsLayout();
+        bindRowDeleteButtons();
+      });
     }
 
     function syncVisibleCellsWithColumns() {
@@ -74,11 +110,13 @@ function TLIEditBlock(runtime, element) {
         var tipoCelda = $(this).val() || 'input';
         var textoCelda = $(element).find('input[name=texto_celda][pregunta-id="' + idpreg + '"]').val();
         var textoInput = $(element).find('input[name=texto_input][pregunta-id="' + idpreg + '"]').val();
+        var obligatoria = $(element).find('input[name=obligatoria][pregunta-id="' + idpreg + '"]').is(':checked');
         var preg = {
           id: idpreg,
           tipo_celda: tipoCelda,
           texto_celda: textoCelda,
-          texto_input: textoInput
+          texto_input: textoInput,
+          obligatoria: obligatoria
         };
         pregs.push(preg);
       });
@@ -122,33 +160,10 @@ function TLIEditBlock(runtime, element) {
         var nueva_id = max_id + 1 + i;
         appendQuestionCell(nueva_id);
       }
+      rebuildRowsLayout();
       refreshCellTypeVisibility();
-      botones_borrar();
+      bindRowDeleteButtons();
     });
-
-    function botones_borrar(){
-      $(element).find('.borrar-button').off('click').on('click', function(eventObject) {
-        eventObject.preventDefault();
-        var columnasPorFila = normalizeColumnCount($(element).find('select.columnas_por_fila').val());
-
-        var $preguntas = $(element).find('#listapreguntas > div');
-        var $preguntaActual = $(this).closest('div[class^="div-pregunta-"]');
-        var indiceActual = $preguntas.index($preguntaActual);
-
-        if (indiceActual < 0) {
-          return;
-        }
-
-        var inicioFila = Math.floor(indiceActual / columnasPorFila) * columnasPorFila;
-        for (var i = 0; i < columnasPorFila; i++) {
-          var $preguntaFila = $preguntas.eq(inicioFila + i);
-          if ($preguntaFila.length) {
-            $preguntaFila.remove();
-          }
-        }
-      });
-    }
-    botones_borrar();
 
     function refreshCellTypeVisibility() {
       $(element).find('select[name=tipo_celda]').each(function() {
@@ -156,12 +171,15 @@ function TLIEditBlock(runtime, element) {
         var tipoCelda = $(this).val();
         var textoField = $(element).find('.cell-texto-field[pregunta-id="' + idpreg + '"]');
         var inputField = $(element).find('.cell-input-field[pregunta-id="' + idpreg + '"]');
+        var requiredField = $(element).find('.cell-required-field[pregunta-id="' + idpreg + '"]');
         if (tipoCelda === 'texto') {
           textoField.show();
           inputField.hide();
+          requiredField.hide();
         } else {
           textoField.hide();
           inputField.show();
+          requiredField.show();
         }
       });
     }
@@ -171,10 +189,13 @@ function TLIEditBlock(runtime, element) {
     });
     $(element).find('select.columnas_por_fila').on('change', function() {
       syncVisibleCellsWithColumns();
+      rebuildRowsLayout();
       refreshCellTypeVisibility();
-      botones_borrar();
+      bindRowDeleteButtons();
     });
     syncVisibleCellsWithColumns();
+    rebuildRowsLayout();
     refreshCellTypeVisibility();
+    bindRowDeleteButtons();
 
   }

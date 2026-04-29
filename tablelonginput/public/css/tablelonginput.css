@@ -188,3 +188,43 @@
     padding: 10px 25px;
     background-color: #F0F0F1;
 }
+
+/* Studio: bloques por fila con una accion de eliminar */
+#settings-tab #listapreguntas .tli-studio-row {
+    margin: 16px 0;
+    padding: 12px;
+    border: 1px solid #cfd6e0;
+    border-radius: 8px;
+    background-color: #fafbfc;
+}
+
+#settings-tab #listapreguntas .tli-studio-row-title {
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #d8dfe8;
+    font-weight: 600;
+    color: #2d3b45;
+}
+
+#settings-tab #listapreguntas .tli-studio-cell {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border: 1px solid #d8d8d8;
+    border-radius: 6px;
+    background-color: #fff;
+}
+
+#settings-tab #listapreguntas .tli-studio-row-actions {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed #d8dfe8;
+}
+
+.tli textArea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #d8d8d8;
+    border-radius: 6px;
+    background-color: #fff;
+}

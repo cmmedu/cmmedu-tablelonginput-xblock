@@ -88,7 +88,7 @@
     </li>
     <li class="field comp-setting-entry is-set" id="listapreguntas">
       {% for key, value in preguntas %}
-        <div class="div-pregunta-{{key}}">
+        <div class="tli-studio-cell div-pregunta-{{key}}">
           <div class="wrapper-comp-setting">
             <label class="label setting-label" for="tipo_celda">Tipo de celda</label>
             <select class="input setting-input" name="tipo_celda" pregunta-id="{{key}}">
@@ -97,15 +97,18 @@
             </select>
           </div>
           <div class="wrapper-comp-setting cell-texto-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="texto_celda">Texto (admite HTML)</label>
+            <label class="label setting-label" for="texto_celda">Texto</label>
             <input class="input setting-input" name="texto_celda" pregunta-id="{{key}}" value="{{ value.texto_celda|default:value.enunciado }}" type="text" />
           </div>
           <div class="wrapper-comp-setting cell-input-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="texto_input">Texto antes del input (Vacio no se texto)</label>
+            <label class="label setting-label" for="texto_input">Texto antes del input</label>
             <input class="input setting-input" name="texto_input" pregunta-id="{{key}}" value="{{ value.texto_input|default:value.enunciado }}" type="text" />
           </div>
-          <div class="action-item">
-            <a href="#" borrar-id="{{key}}" class="button action-primary borrar-button">Borrar</a>
+          <div class="wrapper-comp-setting cell-required-field" pregunta-id="{{key}}">
+            <label class="label setting-label" for="obligatoria_{{key}}">
+              <input class="input setting-input" name="obligatoria" id="obligatoria_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.obligatoria|default:False %}checked{% endif %} />
+              Obligatoria
+            </label>
           </div>
         </div>
       {% endfor %}
