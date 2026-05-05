@@ -32,6 +32,13 @@
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="min_caracter_input">Mínimo de caracteres por respuesta</label>
+        <input class="input setting-input" name="min_caracter_input" id="min_caracter_input" value="{{ min_caracter_input }}" type="number" step="1" min="0" max="1000" />
+        <span class="help setting-help">0 = sin límite. Solo aplica a celdas tipo input.</span>
+      </div>
+    </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
         <label class="label setting-label" for="numbering_type">Tipo de numeración</label>
         <select class="numbering_type" name="numbering_type">
           <option value="none" {% if numbering_type == 'none' %}selected{% endif %}>

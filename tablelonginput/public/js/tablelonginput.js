@@ -7,6 +7,10 @@ function TLIXBlock(runtime, element, settings) {
     var textareas = $element.find('textarea.student_answer');
     var subFeedback = $element.find('.submission-feedback');
     var areaHeight = $element.data('area-height');
+    var minCaracterInput = parseInt($element.attr('data-min-caracter-input'), 10);
+    if (isNaN(minCaracterInput) || minCaracterInput < 0) {
+        minCaracterInput = 0;
+    }
     var handlerUrl = runtime.handlerUrl(element, 'responder');
 
     if (areaHeight) {
@@ -67,6 +71,29 @@ function TLIXBlock(runtime, element, settings) {
         if (missingRequired) {
             subFeedback.text('Debe completar todas las celdas obligatorias antes de enviar.');
             return;
+        }
+        if (minCaracterInput > 0) {
+            var minLenMsg = false;
+            $element.find('.student_answer').each(function() {
+                var $ta = $(this);
+                var val = ($ta.val() || '').trim();
+                var isRequired = $ta.prop('required');
+                if (isRequired && val.length < minCaracterInput) {
+                    minLenMsg = true;
+                    return false;
+                }
+                if (!isRequired && val.length > 0 && val.length < minCaracterInput) {
+                    minLenMsg = true;
+                    return false;
+                }
+            });
+            if (minLenMsg) {
+                subFeedback.text(
+                    'Cada respuesta debe tener al menos ' + minCaracterInput + ' caracteres ' +
+                    '(las celdas no obligatorias pueden quedar vacías).'
+                );
+                return;
+            }
         }
         buttonCheck.html("<span>" + buttonCheck[0].dataset.checking + "</span>");
         buttonCheck.attr("disabled", true);

@@ -176,6 +176,15 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings
     )
 
+
+    min_caracter_input = Integer(
+        display_name="Mínimo de caracteres por input",
+        help="Mínimo de caracteres que puede tener el input, 0 o vacio para no limitar",
+        default=0,
+        values={'min': 0, 'max': 1000},
+        scope=Scope.settings,
+    )
+
     columnas_por_fila = Integer(
         display_name="Cantidad de celdas por fila",
         help="Cantidad de celdas de contenido por fila (sin contar numeración)",
@@ -250,6 +259,17 @@ class tablelonginputXBlock(XBlock):
         except (TypeError, ValueError):
             return 2
         return max(1, min(3, parsed))
+
+    @staticmethod
+    def normalize_min_caracter_input(value):
+        """
+        Minimum character count for answer textareas; 0 means no limit.
+        """
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return 0
+        return max(0, min(1000, parsed))
 
     @staticmethod
     def normalize_required_flag(value):
@@ -385,6 +405,7 @@ class tablelonginputXBlock(XBlock):
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
                 'columnas_por_fila': columnas_por_fila,
+                'min_caracter_input': self.normalize_min_caracter_input(self.min_caracter_input),
             }
         )
         template = loader.render_django_template(
@@ -454,6 +475,7 @@ class tablelonginputXBlock(XBlock):
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
                 'columnas_por_fila': cols,
+                'min_caracter_input': self.normalize_min_caracter_input(self.min_caracter_input),
             }
         )
         template = loader.render_django_template(
@@ -512,6 +534,40 @@ class tablelonginputXBlock(XBlock):
                         'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
                     }
 
+            min_len = self.normalize_min_caracter_input(self.min_caracter_input)
+            if min_len > 0:
+                for idpreg, preg_data in self.preguntas.items():
+                    if not isinstance(preg_data, dict):
+                        continue
+                    if preg_data.get('tipo_celda', 'input') != 'input':
+                        continue
+                    respuesta = nuevas_resps.get(idpreg, '')
+                    texto = str(respuesta).strip()
+                    obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
+                    if obligatoria and len(texto) < min_len:
+                        return {
+                            'texto': (
+                                'Cada celda obligatoria debe tener al menos '
+                                + str(min_len)
+                                + ' caracteres.'
+                            ),
+                            'score': self.score,
+                            'nro_de_intentos': self.max_attempts,
+                            'intentos': self.attempts,
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                        }
+                    if not obligatoria and texto and len(texto) < min_len:
+                        return {
+                            'texto': (
+                                'Las respuestas no vacías deben tener al menos '
+                                + str(min_len)
+                                + ' caracteres.'
+                            ),
+                            'score': self.score,
+                            'nro_de_intentos': self.max_attempts,
+                            'intentos': self.attempts,
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                        }
 
             self.respuestas = nuevas_resps
 
@@ -609,6 +665,9 @@ class tablelonginputXBlock(XBlock):
         else:
             self.texto_header = self.header_celdas.get('0', '') or ''
         self.area_height = self.normalize_area_height(data.get('area_height'))
+        self.min_caracter_input = self.normalize_min_caracter_input(
+            data.get('min_caracter_input', self.min_caracter_input)
+        )
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))
         if data.get('nro_de_intentos') and int(data.get('nro_de_intentos')) > 0:

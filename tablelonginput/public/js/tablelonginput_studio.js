@@ -179,6 +179,7 @@ function TLIEditBlock(runtime, element) {
         weight: $(element).find('input[name=weight]').val(),
         nro_de_intentos: $(element).find('input[name=nro_de_intentos]').val(),
         area_height: $(element).find('input[name=area_height]').val(),
+        min_caracter_input: $(element).find('input[name=min_caracter_input]').val(),
         numbering_type: $(element).find('select.numbering_type').val(),
         pretext_num: $(element).find('input[name=pretext_num]').val(),
         postext_num: $(element).find('input[name=postext_num]').val(),

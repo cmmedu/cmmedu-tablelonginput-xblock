@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="problem tli_block problems-wrapper" data-area-height="{{ area_height }}">
+<div class="problem tli_block problems-wrapper" data-area-height="{{ area_height }}" data-min-caracter-input="{{ min_caracter_input }}">
   <h3 class="tli-header problem-header">{{ display_name }}</h3>
   <div class="problem-progress">{{ problem_progress }}</div>
   {% if no_mas_intentos or preguntas|length == 0 %}
@@ -52,12 +52,12 @@
                             {% if no_mas_intentos %}
                               {{ ans }}
                             {% else %}
-                              <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" value="{{ ans }}" style="height: {{ area_height }};" {% if pregunta.obligatoria %}required="required"{% endif %} />
+                              <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" value="{{ ans }}" style="height: {{ area_height }};" {% if pregunta.obligatoria %}required="required"{% endif %}{% if min_caracter_input > 0 %} minlength="{{ min_caracter_input }}"{% endif %} {% if min_caracter_input > 0 %}placeholder="Escriba aquí al menos {{ min_caracter_input }} caracteres."{% else %}placeholder="Escriba aquí..."{% endif %} />
                             {% endif %}
                           {% endif %}
                         {% endfor %}
                       {% else %}
-                        <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" style="height: {{ area_height }};" {% if pregunta.obligatoria %}required="required"{% endif %} />
+                        <textarea class="student_answer student_answer_input" pregunta-id="{{ pregunta.id }}" name="{{ pregunta.id }}_{{ location }}" style="height: {{ area_height }};" {% if pregunta.obligatoria %}required="required"{% endif %}{% if min_caracter_input > 0 %} minlength="{{ min_caracter_input }}"{% endif %} {% if min_caracter_input > 0 %}placeholder="Escriba aquí al menos {{ min_caracter_input }} caracteres."{% else %}placeholder="Escriba aquí..."{% endif %} />
                       {% endif %}
                     </div>
                   {% endif %}
