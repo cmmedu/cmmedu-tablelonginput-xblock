@@ -562,8 +562,22 @@ class tablelonginputXBlock(XBlock):
         """
         Called when submitting the form in Studio.
         """
-        nuevas_pregs = {}
+        cols = self.normalize_column_count(
+            data.get('columnas_por_fila', self.columnas_por_fila)
+        )
         pregs = data.get('preguntas')
+        if not isinstance(pregs, list):
+            pregs = []
+        if len(pregs) < cols:
+            return {
+                'result': 'error',
+                'message': (
+                    'Debe haber al menos una fila completa antes de guardar '
+                    '(una celda por cada columna configurada).'
+                ),
+            }
+
+        nuevas_pregs = {}
         for p in pregs:
             #WARNING: Aquí aunque castee a int, queda como string la id, me rendi por eso ocupo string
             tipo_celda = p.get('tipo_celda', 'input')

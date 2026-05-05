@@ -156,6 +156,16 @@ function TLIEditBlock(runtime, element) {
         };
         pregs.push(preg);
       });
+      var columnasPorFilaSave = normalizeColumnCount(
+        $(element).find('select.columnas_por_fila').val()
+      );
+      if (!pregs.length || pregs.length < columnasPorFilaSave) {
+        window.alert(
+          'Debe haber al menos una fila completa antes de guardar ' +
+          '(una celda por cada columna configurada).'
+        );
+        return;
+      }
       var headerCeldas = {};
       $(element).find('.header-celda-input').each(function() {
         var col = String($(this).data('col'));
@@ -182,6 +192,10 @@ function TLIEditBlock(runtime, element) {
         runtime.notify('save', {state: 'start'});
       }
       $.post(handlerUrl, JSON.stringify(data)).done(function(response) {
+        if (response && response.result === 'error') {
+          window.alert(response.message || 'No se pudo guardar.');
+          return;
+        }
         if ($.isFunction(runtime.notify)) {
           runtime.notify('save', {state: 'end'});
         }
