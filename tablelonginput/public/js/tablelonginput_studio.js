@@ -32,11 +32,11 @@ function TLIEditBlock(runtime, element) {
       nuevaPregunta += '</select>';
       nuevaPregunta += '</div>';
       nuevaPregunta += '<div class="wrapper-comp-setting cell-texto-field" pregunta-id="'+id+'">';
-      nuevaPregunta += '<label class="label setting-label" for="texto_celda">Texto (admite HTML)</label>';
+      nuevaPregunta += '<label class="label setting-label" for="texto_celda">Texto</label>';
       nuevaPregunta += '<input class="input setting-input" name="texto_celda" pregunta-id="'+id+'" value="" type="text" />';
       nuevaPregunta += '</div>';
       nuevaPregunta += '<div class="wrapper-comp-setting cell-input-field" pregunta-id="'+id+'">';
-      nuevaPregunta += '<label class="label setting-label" for="texto_input">Texto antes del input (opcional, admite HTML)</label>';
+      nuevaPregunta += '<label class="label setting-label" for="texto_input">Texto antes del input (opcional)</label>';
       nuevaPregunta += '<input class="input setting-input" name="texto_input" pregunta-id="'+id+'" value="" type="text" />';
       nuevaPregunta += '</div>';
       nuevaPregunta += '<div class="wrapper-comp-setting cell-required-field" pregunta-id="'+id+'">';
@@ -52,12 +52,48 @@ function TLIEditBlock(runtime, element) {
       $(element).find('#listapreguntas').append(buildQuestionHtml(id));
     }
 
+    function readHeaderCeldaValues() {
+      var vals = {};
+      $(element).find('.header-celda-input').each(function() {
+        var col = $(this).data('col');
+        vals[col] = $(this).val();
+      });
+      return vals;
+    }
+
+    function syncHeaderCellsToColumnCount(columnasPorFila) {
+      var vals = readHeaderCeldaValues();
+      var $container = $(element).find('#tli-studio-header-cells');
+      if (!$container.length) {
+        return;
+      }
+      $container.empty();
+      for (var c = 0; c < columnasPorFila; c++) {
+        var prev = vals[c] !== undefined && vals[c] !== null ? vals[c] : '';
+        var $wrap = $('<div class="wrapper-comp-setting tli-studio-header-cell"></div>').attr('data-col', c);
+        var $label = $('<label class="label setting-label"></label>').attr('for', 'header_celda_' + c);
+        $label.text('Encabezado columna ' + (c + 1) + ' (admite HTML)');
+        var $inp = $('<input class="input setting-input header-celda-input" type="text" />')
+          .attr('name', 'header_celda')
+          .attr('id', 'header_celda_' + c)
+          .attr('data-col', c)
+          .val(prev);
+        $wrap.append($label).append($inp);
+        $container.append($wrap);
+      }
+    }
+
     function rebuildRowsLayout() {
       var columnasPorFila = normalizeColumnCount($(element).find('select.columnas_por_fila').val());
       var $listaPreguntas = $(element).find('#listapreguntas');
+      var $headerRow = $listaPreguntas.children('.tli-studio-header-row').first().detach();
       var $celdas = $listaPreguntas.find('.tli-studio-cell').detach();
 
       $listaPreguntas.empty();
+      if ($headerRow.length) {
+        $listaPreguntas.append($headerRow);
+        syncHeaderCellsToColumnCount(columnasPorFila);
+      }
       for (var i = 0; i < $celdas.length; i += columnasPorFila) {
         var numeroFila = Math.floor(i / columnasPorFila) + 1;
         var $fila = $('<div class="tli-studio-row"></div>');
@@ -120,11 +156,15 @@ function TLIEditBlock(runtime, element) {
         };
         pregs.push(preg);
       });
+      var headerCeldas = {};
+      $(element).find('.header-celda-input').each(function() {
+        var col = String($(this).data('col'));
+        headerCeldas[col] = $(this).val();
+      });
       var data = {
         display_name: $(element).find('input[name=display_name]').val(),
         texto_verdadero: $(element).find('input[name=texto_verdadero]').val(),
         texto_falso: $(element).find('input[name=texto_falso]').val(),
-        texto_header: $(element).find('input[name=texto_header]').val(),
         texto_header_num: $(element).find('input[name=texto_header_num]').val(),
         weight: $(element).find('input[name=weight]').val(),
         nro_de_intentos: $(element).find('input[name=nro_de_intentos]').val(),
@@ -133,6 +173,8 @@ function TLIEditBlock(runtime, element) {
         pretext_num: $(element).find('input[name=pretext_num]').val(),
         postext_num: $(element).find('input[name=postext_num]').val(),
         columnas_por_fila: $(element).find('select.columnas_por_fila').val(),
+        mostrar_header_tabla: $(element).find('#mostrar_header_tabla').is(':checked'),
+        header_celdas: headerCeldas,
         preguntas: pregs
       };
       //console.log(data)

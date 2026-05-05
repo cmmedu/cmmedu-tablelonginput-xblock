@@ -13,12 +13,6 @@
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
-        <div class="wrapper-comp-setting">
-          <label class="label setting-label" for="texto_header">Texto Header</label>
-          <input class="input setting-input" name="texto_header" id="texto_header" value="{{texto_header}}" type="text" />
-        </div>
-      </li>
-    <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
         <label class="label setting-label" for="weight">Peso</label>
         <input class="input setting-input" name="weight" id="weight" value="{{weight}}" type="number" step="1" min="0" />
@@ -87,6 +81,23 @@
       </div>
     </li>
     <li class="field comp-setting-entry is-set" id="listapreguntas">
+      <div class="tli-studio-row tli-studio-header-row">
+        <div class="tli-studio-row-title">Fila 0</div>
+        <div class="wrapper-comp-setting">
+          <label class="label setting-label" for="mostrar_header_tabla">
+            <input class="input setting-input" name="mostrar_header_tabla" id="mostrar_header_tabla" type="checkbox" {% if mostrar_header_tabla %}checked="checked"{% endif %} />
+            Mostrar encabezado en la tabla
+          </label>
+        </div>
+        <div id="tli-studio-header-cells">
+          {% for cell in header_cells_studio %}
+          <div class="wrapper-comp-setting tli-studio-header-cell" data-col="{{ cell.idx }}">
+            <label class="label setting-label" for="header_celda_{{ cell.idx }}">Encabezado columna {{ cell.num }}</label>
+            <input class="input setting-input header-celda-input" name="header_celda" id="header_celda_{{ cell.idx }}" data-col="{{ cell.idx }}" type="text" value="{{ cell.text }}" />
+          </div>
+          {% endfor %}
+        </div>
+      </div>
       {% for key, value in preguntas %}
         <div class="tli-studio-cell div-pregunta-{{key}}">
           <div class="wrapper-comp-setting">
@@ -101,7 +112,7 @@
             <input class="input setting-input" name="texto_celda" pregunta-id="{{key}}" value="{{ value.texto_celda|default:value.enunciado }}" type="text" />
           </div>
           <div class="wrapper-comp-setting cell-input-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="texto_input">Texto antes del input</label>
+            <label class="label setting-label" for="texto_input">Texto antes del input (opcional)</label>
             <input class="input setting-input" name="texto_input" pregunta-id="{{key}}" value="{{ value.texto_input|default:value.enunciado }}" type="text" />
           </div>
           <div class="wrapper-comp-setting cell-required-field" pregunta-id="{{key}}">

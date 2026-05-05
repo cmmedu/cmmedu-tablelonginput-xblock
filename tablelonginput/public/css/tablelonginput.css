@@ -189,6 +189,23 @@
     background-color: #F0F0F1;
 }
 
+.tli_block .tli-table-content thead .tli-header-cell {
+    padding: 10px 25px;
+    background-color: #F0F0F1;
+}
+
+/* Studio: fila 0 encabezado (no eliminable) */
+#settings-tab #listapreguntas .tli-studio-header-row {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #cfd6e0;
+}
+
+#settings-tab #listapreguntas .tli-studio-header-row .tli-studio-row-title {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
 /* Studio: bloques por fila con una accion de eliminar */
 #settings-tab #listapreguntas .tli-studio-row {
     margin: 16px 0;

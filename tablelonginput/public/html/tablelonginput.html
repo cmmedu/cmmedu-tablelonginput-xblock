@@ -1,7 +1,4 @@
 {% load i18n %}
-<script>
-  MathJax.Hub.Queue(["Typeset", MathJax.Hub]);// Renderiza MathJax nuevamente
-</script>
 <div class="problem tli_block problems-wrapper" data-area-height="{{ area_height }}">
   <h3 class="tli-header problem-header">{{ display_name }}</h3>
   <div class="problem-progress">{{ problem_progress }}</div>
@@ -11,7 +8,18 @@
     <div class="tablagrande" id="longinputtable">
   {% endif %}
       <table class="tli-table-content">
-        {% if texto_header != '' %}
+        {% if mostrar_header_tabla %}
+          <thead>
+            <tr>
+              {% if numbering_type != 'none' %}
+              <th class="tli-number-cell" style="text-align:center;">{{ texto_header_num }}</th>
+              {% endif %}
+              {% for hcell in header_row_cells %}
+              <th class="tli-content-cell tli-header-cell" style="text-align:center;"><strong>{{ hcell|safe }}</strong></th>
+              {% endfor %}
+            </tr>
+          </thead>
+        {% elif use_legacy_header %}
           <thead>
             <tr>
               {% if numbering_type != 'none' %}
@@ -37,7 +45,7 @@
                         {{ pregunta.texto_input|safe }}{% if pregunta.obligatoria %} *{% endif %}
                       </div>
                     {% endif %}
-                    <div class="tli-cell-input">
+                    <div class="tli-cell-input" style="text-align: justify;">
                       {% if respondido %}
                         {% for iter, ans in respuestas.items %}
                           {% if iter == pregunta.id %}
@@ -61,13 +69,6 @@
       </table>
     </div>
 
-  <div class="divrespuestas">
-      {% for key, value in respuestas.items %}
-        {% if value != 'nada'%}
-        <input type="hidden" class="lasrespuestas" respuesta-id={{key}} value="{{value}}">
-        {% endif %}
-      {% endfor %}
-  </div>
   <div class="action">
             {% if no_mas_intentos or preguntas|length == 0 %}
               <button class="check Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="submission_feedback_{{ location }}" disabled="disabled">
@@ -78,6 +79,9 @@
             {% endif %}
                 <span>Enviar</span>
               </button>
+            {% if respondido %}
+              Respuesta enviada.
+            {% endif %}
               <span id="submission_feedback_{{ location }}" class="submission-feedback">
                 {{texto_intentos}}
               </span>

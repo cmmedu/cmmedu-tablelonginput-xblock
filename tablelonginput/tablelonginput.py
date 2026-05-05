@@ -104,7 +104,7 @@ class tablelonginputXBlock(XBlock):
     )
 
     #preguntas
-    preguntas = Dict(default={'1':{'enunciado':'¿1+1=2?'}, '2':{'enunciado':'Un triángulo tiene 4 lados'}},
+    preguntas = Dict(default={'1': {'enunciado': 'Completa...'}, '2': {}},
                  scope=Scope.settings,
                  help="Lista de preguntas")
     #respuestas del estudiante
@@ -184,6 +184,19 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings,
     )
 
+    mostrar_header_tabla = Boolean(
+        display_name="Mostrar encabezado en la tabla",
+        help="Si es verdadero, se muestra una fila de encabezado con una celda por columna de contenido.",
+        default=False,
+        scope=Scope.settings,
+    )
+
+    header_celdas = Dict(
+        default={},
+        scope=Scope.settings,
+        help="Texto por columna de encabezado (claves '0', '1', '2').",
+    )
+
     last_submission_time = Date(
         help= "Last submission time",
         scope=Scope.user_state)
@@ -249,6 +262,20 @@ class tablelonginputXBlock(XBlock):
             return value.lower() in ('1', 'true', 'yes', 'on')
         return False
 
+    @staticmethod
+    def normalize_header_celdas(raw, columnas_por_fila):
+        """
+        Devuelve un dict con claves '0'..'n-1' y valores string para el encabezado por columna.
+        """
+        cols = tablelonginputXBlock.normalize_column_count(columnas_por_fila)
+        out = {}
+        if isinstance(raw, dict):
+            for i in range(cols):
+                key = str(i)
+                val = raw.get(key, raw.get(i, ''))
+                out[key] = '' if val is None else str(val)
+        return out
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -289,6 +316,8 @@ class tablelonginputXBlock(XBlock):
         lista_pregs = []
         for preg in lista_pregs_raw:
             preg_data = preg[1]
+            if not isinstance(preg_data, dict):
+                preg_data = {}
             tipo_celda = preg_data.get('tipo_celda', 'input')
             legacy_enunciado = preg_data.get('enunciado', '')
             texto_celda = preg_data.get('texto_celda', legacy_enunciado)
@@ -302,6 +331,12 @@ class tablelonginputXBlock(XBlock):
                 'obligatoria': obligatoria,
             })
         columnas_por_fila = self.normalize_column_count(self.columnas_por_fila)
+        header_celdas_norm = self.normalize_header_celdas(self.header_celdas, columnas_por_fila)
+        header_row_cells = [header_celdas_norm.get(str(i), '') for i in range(columnas_por_fila)]
+        use_legacy_header = (
+            not self.mostrar_header_tabla
+            and bool((self.texto_header or '').strip())
+        )
         filas_preguntas = []
         for idx in range(0, len(lista_pregs), columnas_por_fila):
             fila_celdas = lista_pregs[idx:idx + columnas_por_fila]
@@ -330,6 +365,9 @@ class tablelonginputXBlock(XBlock):
                 'respuestas': self.respuestas,
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
+                'mostrar_header_tabla': self.mostrar_header_tabla,
+                'header_row_cells': header_row_cells,
+                'use_legacy_header': use_legacy_header,
                 'texto_correcto': self.texto_correcto,
                 'texto_incorrecto': self.texto_incorrecto,
                 'texto_intentos': texto_intentos,
@@ -372,8 +410,32 @@ class tablelonginputXBlock(XBlock):
         Create a fragment used to display the edit view in the Studio.
         """
         #Tuve que pasar las preguntas a una lista para ordenarlas
-        lista_pregs = [ [k,v] for k, v in list(self.preguntas.items()) ]
-        lista_pregs = sorted(lista_pregs, key=lambda x: int(x[0]))
+        lista_pregs_raw = [[k, v] for k, v in list(self.preguntas.items())]
+        lista_pregs_raw = sorted(lista_pregs_raw, key=lambda x: int(x[0]))
+        lista_pregs = []
+        for key, value in lista_pregs_raw:
+            preg_data = value if isinstance(value, dict) else {}
+            tipo_celda = preg_data.get('tipo_celda', 'input')
+            legacy_enunciado = preg_data.get('enunciado', '')
+            lista_pregs.append([key, {
+                'enunciado': legacy_enunciado,
+                'tipo_celda': tipo_celda,
+                'texto_celda': preg_data.get('texto_celda', legacy_enunciado),
+                'texto_input': preg_data.get('texto_input', legacy_enunciado if tipo_celda == 'input' else ''),
+                'obligatoria': self.normalize_required_flag(preg_data.get('obligatoria', False)),
+            }])
+        cols = self.normalize_column_count(self.columnas_por_fila)
+        hc = dict(self.header_celdas or {})
+        legacy_header = (self.texto_header or '').strip()
+        if legacy_header and not any((hc.get(str(i)) or '').strip() for i in range(cols)):
+            hc['0'] = self.texto_header
+        header_cells_studio = []
+        for i in range(cols):
+            header_cells_studio.append({
+                'idx': i,
+                'num': i + 1,
+                'text': hc.get(str(i), '') or '',
+            })
 
         context.update(
             {
@@ -383,13 +445,15 @@ class tablelonginputXBlock(XBlock):
                 'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
                 'texto_header_num': self.texto_header_num,
+                'mostrar_header_tabla': self.mostrar_header_tabla,
+                'header_cells_studio': header_cells_studio,
                 'weight': self.weight,
                 'nro_de_intentos': self.max_attempts,
                 'area_height': self.normalize_area_height(self.area_height),
                 'numbering_type': self.numbering_type,
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
-                'columnas_por_fila': self.normalize_column_count(self.columnas_por_fila),
+                'columnas_por_fila': cols,
             }
         )
         template = loader.render_django_template(
@@ -432,6 +496,8 @@ class tablelonginputXBlock(XBlock):
                 buenas+=1
 
             for idpreg, preg_data in self.preguntas.items():
+                if not isinstance(preg_data, dict):
+                    continue
                 if preg_data.get('tipo_celda', 'input') != 'input':
                     continue
                 if not self.normalize_required_flag(preg_data.get('obligatoria', False)):
@@ -512,12 +578,22 @@ class tablelonginputXBlock(XBlock):
         self.display_name = data.get('display_name')
         self.texto_verdadero = data.get('texto_verdadero')
         self.texto_falso = data.get('texto_falso')
-        self.texto_header = data.get('texto_header')
         self.texto_header_num = data.get('texto_header_num', self.texto_header_num)
         self.numbering_type = data.get('numbering_type', self.numbering_type)
         self.pretext_num = data.get('pretext_num', self.pretext_num)
         self.postext_num = data.get('postext_num', self.postext_num)
         self.columnas_por_fila = self.normalize_column_count(data.get('columnas_por_fila', self.columnas_por_fila))
+        self.mostrar_header_tabla = self.normalize_required_flag(data.get('mostrar_header_tabla', False))
+        self.header_celdas = self.normalize_header_celdas(
+            data.get('header_celdas', self.header_celdas),
+            self.columnas_por_fila,
+        )
+        if self.mostrar_header_tabla:
+            self.texto_header = ''
+        elif 'texto_header' in data:
+            self.texto_header = data.get('texto_header') or ''
+        else:
+            self.texto_header = self.header_celdas.get('0', '') or ''
         self.area_height = self.normalize_area_height(data.get('area_height'))
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))
