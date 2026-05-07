@@ -98,7 +98,7 @@ function TLIXBlock(runtime, element, settings) {
         buttonCheck.html("<span>" + buttonCheck[0].dataset.checking + "</span>");
         buttonCheck.attr("disabled", true);
         if ($.isFunction(runtime.notify)) {
-            runtime.notify('submit', {
+            runtime.notify('tli-submit', {
                 message: 'Submitting...',
                 state: 'start'
             });
@@ -117,7 +117,7 @@ function TLIXBlock(runtime, element, settings) {
             success: updateText
         });
         if ($.isFunction(runtime.notify)) {
-            runtime.notify('submit', {
+            runtime.notify('tli-submit', {
                 state: 'end'
             });
         }

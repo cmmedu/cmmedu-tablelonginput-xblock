@@ -39,10 +39,15 @@ function TLIEditBlock(runtime, element) {
       nuevaPregunta += '<label class="label setting-label" for="texto_input">Texto antes del input (opcional)</label>';
       nuevaPregunta += '<input class="input setting-input" name="texto_input" pregunta-id="'+id+'" value="" type="text" />';
       nuevaPregunta += '</div>';
-      nuevaPregunta += '<div class="wrapper-comp-setting cell-required-field" pregunta-id="'+id+'">';
-      nuevaPregunta += '<label class="label setting-label" for="obligatoria_'+id+'">';
-      nuevaPregunta += '<input class="input setting-input" name="obligatoria" id="obligatoria_'+id+'" pregunta-id="'+id+'" type="checkbox" /> Obligatoria';
+      nuevaPregunta += '<div class="wrapper-comp-setting cell-minimo-diferente-check-field" pregunta-id="'+id+'">';
+      nuevaPregunta += '<label class="label setting-label" for="minimo_diferente_activo_'+id+'">';
+      nuevaPregunta += '<input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_'+id+'" pregunta-id="'+id+'" type="checkbox" /> Número mínimo diferente';
       nuevaPregunta += '</label>';
+      nuevaPregunta += '</div>';
+      nuevaPregunta += '<div class="wrapper-comp-setting cell-minimo-diferente-value-field" pregunta-id="'+id+'">';
+      nuevaPregunta += '<label class="label setting-label" for="minimo_diferente_'+id+'">Mínimo diferente para esta celda</label>';
+      nuevaPregunta += '<input class="input setting-input" name="minimo_diferente" id="minimo_diferente_'+id+'" pregunta-id="'+id+'" value="0" type="number" step="1" min="0" max="1000" />';
+      nuevaPregunta += '<span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo para esta celda.</span>';
       nuevaPregunta += '</div>';
       nuevaPregunta += '</div>';
       return nuevaPregunta;
@@ -146,13 +151,15 @@ function TLIEditBlock(runtime, element) {
         var tipoCelda = $(this).val() || 'input';
         var textoCelda = $(element).find('input[name=texto_celda][pregunta-id="' + idpreg + '"]').val();
         var textoInput = $(element).find('input[name=texto_input][pregunta-id="' + idpreg + '"]').val();
-        var obligatoria = $(element).find('input[name=obligatoria][pregunta-id="' + idpreg + '"]').is(':checked');
+        var minimoDiferenteActivo = $(element).find('input[name=minimo_diferente_activo][pregunta-id="' + idpreg + '"]').is(':checked');
+        var minimoDiferente = $(element).find('input[name=minimo_diferente][pregunta-id="' + idpreg + '"]').val();
         var preg = {
           id: idpreg,
           tipo_celda: tipoCelda,
           texto_celda: textoCelda,
           texto_input: textoInput,
-          obligatoria: obligatoria
+          minimo_diferente_activo: minimoDiferenteActivo,
+          minimo_diferente: minimoDiferente
         };
         pregs.push(preg);
       });
@@ -228,20 +235,31 @@ function TLIEditBlock(runtime, element) {
         var tipoCelda = $(this).val();
         var textoField = $(element).find('.cell-texto-field[pregunta-id="' + idpreg + '"]');
         var inputField = $(element).find('.cell-input-field[pregunta-id="' + idpreg + '"]');
-        var requiredField = $(element).find('.cell-required-field[pregunta-id="' + idpreg + '"]');
+        var minimoDiferenteCheckField = $(element).find('.cell-minimo-diferente-check-field[pregunta-id="' + idpreg + '"]');
+        var minimoDiferenteValueField = $(element).find('.cell-minimo-diferente-value-field[pregunta-id="' + idpreg + '"]');
+        var minimoDiferenteActivo = $(element).find('input[name=minimo_diferente_activo][pregunta-id="' + idpreg + '"]').is(':checked');
         if (tipoCelda === 'texto') {
           textoField.show();
           inputField.hide();
-          requiredField.hide();
+          minimoDiferenteCheckField.hide();
+          minimoDiferenteValueField.hide();
         } else {
           textoField.hide();
           inputField.show();
-          requiredField.show();
+          minimoDiferenteCheckField.show();
+          if (minimoDiferenteActivo) {
+            minimoDiferenteValueField.show();
+          } else {
+            minimoDiferenteValueField.hide();
+          }
         }
       });
     }
 
     $(element).on('change', 'select[name=tipo_celda]', function() {
+      refreshCellTypeVisibility();
+    });
+    $(element).on('change', 'input[name=minimo_diferente_activo]', function() {
       refreshCellTypeVisibility();
     });
     $(element).find('select.columnas_por_fila').on('change', function() {

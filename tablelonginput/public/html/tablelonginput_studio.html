@@ -122,11 +122,18 @@
             <label class="label setting-label" for="texto_input">Texto antes del input (opcional)</label>
             <input class="input setting-input" name="texto_input" pregunta-id="{{key}}" value="{{ value.texto_input|default:value.enunciado }}" type="text" />
           </div>
-          <div class="wrapper-comp-setting cell-required-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="obligatoria_{{key}}">
-              <input class="input setting-input" name="obligatoria" id="obligatoria_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.obligatoria|default:False %}checked{% endif %} />
-              Obligatoria
+          <div class="wrapper-comp-setting cell-minimo-diferente-check-field" pregunta-id="{{key}}">
+            <label class="label setting-label" for="minimo_diferente_activo_{{key}}">
+              <input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.minimo_diferente_activo|default:False %}checked{% endif %} />
+              Número mínimo diferente
             </label>
+          </div>
+          <div class="wrapper-comp-setting cell-minimo-diferente-value-field" pregunta-id="{{key}}">
+            <label class="label setting-label" for="minimo_diferente_{{key}}">
+              Mínimo diferente para esta celda
+            </label>
+            <input class="input setting-input" name="minimo_diferente" id="minimo_diferente_{{key}}" pregunta-id="{{key}}" value="{{ value.minimo_diferente|default:0 }}" type="number" step="1" min="0" max="1000" />
+            <span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo de caracteres para esta celda.</span>
           </div>
         </div>
       {% endfor %}

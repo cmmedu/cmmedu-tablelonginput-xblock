@@ -54,19 +54,6 @@ class tablelonginputXBlock(XBlock):
         default="Table long input XBlock"
     )
 
-    texto_verdadero = String(
-        display_name="Verdadero",
-        help="Texto que ve el estudiante en el Verdadero",
-        scope=Scope.settings,
-        default="V"
-    )
-
-    texto_falso = String(
-        display_name="Label respuesta",
-        help="Texto que ve el estudiante en el Falso",
-        scope=Scope.settings,
-        default="Respuesta"
-    )
 
     texto_header = String(
         display_name="Header",
@@ -82,25 +69,47 @@ class tablelonginputXBlock(XBlock):
         default="N°",
     )
 
-    texto_correcto = String(
-        display_name="Falso",
-        help="Texto que aparece al tener todas buenas",
+    texto_enviada = String(
+        display_name="Texto enviada",
+        help="Texto que aparece al enviar la respuesta",
         scope=Scope.settings,
-        default="¡Respuesta Correcta!",
+        default="¡Respuesta enviada!",
+    )
+
+    # Campos heredados del XBlock V/F base; siguen usados en Studio/handlers.
+    texto_verdadero = String(
+        display_name="Texto verdadero (legacy)",
+        help="Vestigio del bloque base; puede ignorarse en la práctica.",
+        scope=Scope.settings,
+        default="V",
+    )
+
+    texto_falso = String(
+        display_name="Texto",
+        help="Texto configurable en Studio (etiqueta heredada del bloque V/F).",
+        scope=Scope.settings,
+        default="",
+    )
+
+    texto_correcto = String(
+        display_name="Texto respuesta correcta",
+        help="Mensaje devuelto al enviar la respuesta con éxito.",
+        scope=Scope.settings,
+        default="¡Correcto!",
     )
 
     texto_incorrecto = String(
-        display_name="Falso",
-        help="Texto que aparece cuando tienes todas malas",
+        display_name="Texto respuesta incorrecta",
+        help="Mensaje si la respuesta se considera incorrecta.",
         scope=Scope.settings,
-        default="Respuesta Incorrecta",
+        default="Incorrecto.",
     )
 
     texto_parcial = String(
-        display_name="Falso",
-        help="Texto que aparece cuando tienes una buena pero no el total",
+        display_name="Texto respuesta parcial",
+        help="Mensaje para puntaje parcial.",
         scope=Scope.settings,
-        default="Respuesta parcialmente correcta",
+        default="Respuesta parcial.",
     )
 
     #preguntas
@@ -272,6 +281,17 @@ class tablelonginputXBlock(XBlock):
         return max(0, min(1000, parsed))
 
     @staticmethod
+    def normalize_minimo_diferente(value):
+        """
+        Minimum character override value per input cell.
+        """
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return 0
+        return max(0, min(1000, parsed))
+
+    @staticmethod
     def normalize_required_flag(value):
         """
         Returns True when a per-cell required flag is enabled.
@@ -334,6 +354,7 @@ class tablelonginputXBlock(XBlock):
         lista_pregs_raw = [ [k,v] for k, v in list(self.preguntas.items()) ]
         lista_pregs_raw = sorted(lista_pregs_raw, key=lambda x: int(x[0]))
         lista_pregs = []
+        min_caracter_input = self.normalize_min_caracter_input(self.min_caracter_input)
         for preg in lista_pregs_raw:
             preg_data = preg[1]
             if not isinstance(preg_data, dict):
@@ -343,12 +364,27 @@ class tablelonginputXBlock(XBlock):
             texto_celda = preg_data.get('texto_celda', legacy_enunciado)
             texto_input = preg_data.get('texto_input', legacy_enunciado if tipo_celda == 'input' else '')
             obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
+            minimo_diferente_activo = self.normalize_required_flag(
+                preg_data.get('minimo_diferente_activo', False)
+            )
+            minimo_diferente = self.normalize_minimo_diferente(
+                preg_data.get('minimo_diferente', 0)
+            )
+            if minimo_diferente_activo:
+                minimo_efectivo = minimo_diferente
+            elif obligatoria:
+                minimo_efectivo = max(1, min_caracter_input)
+            else:
+                minimo_efectivo = min_caracter_input
             lista_pregs.append({
                 'id': preg[0],
                 'tipo_celda': tipo_celda,
                 'texto_celda': texto_celda,
                 'texto_input': texto_input,
                 'obligatoria': obligatoria,
+                'minimo_diferente_activo': minimo_diferente_activo,
+                'minimo_diferente': minimo_diferente,
+                'minimo_efectivo': minimo_efectivo,
             })
         columnas_por_fila = self.normalize_column_count(self.columnas_por_fila)
         header_celdas_norm = self.normalize_header_celdas(self.header_celdas, columnas_por_fila)
@@ -405,7 +441,7 @@ class tablelonginputXBlock(XBlock):
                 'pretext_num': self.pretext_num,
                 'postext_num': self.postext_num,
                 'columnas_por_fila': columnas_por_fila,
-                'min_caracter_input': self.normalize_min_caracter_input(self.min_caracter_input),
+                'min_caracter_input': min_caracter_input,
             }
         )
         template = loader.render_django_template(
@@ -443,7 +479,12 @@ class tablelonginputXBlock(XBlock):
                 'tipo_celda': tipo_celda,
                 'texto_celda': preg_data.get('texto_celda', legacy_enunciado),
                 'texto_input': preg_data.get('texto_input', legacy_enunciado if tipo_celda == 'input' else ''),
-                'obligatoria': self.normalize_required_flag(preg_data.get('obligatoria', False)),
+                'minimo_diferente_activo': self.normalize_required_flag(
+                    preg_data.get('minimo_diferente_activo', False)
+                ),
+                'minimo_diferente': self.normalize_minimo_diferente(
+                    preg_data.get('minimo_diferente', 0)
+                ),
             }])
         cols = self.normalize_column_count(self.columnas_por_fila)
         hc = dict(self.header_celdas or {})
@@ -522,6 +563,29 @@ class tablelonginputXBlock(XBlock):
                     continue
                 if preg_data.get('tipo_celda', 'input') != 'input':
                     continue
+                minimo_diferente_activo = self.normalize_required_flag(
+                    preg_data.get('minimo_diferente_activo', False)
+                )
+                minimo_diferente = self.normalize_minimo_diferente(
+                    preg_data.get('minimo_diferente', 0)
+                )
+                if minimo_diferente_activo:
+                    if minimo_diferente <= 0:
+                        continue
+                    respuesta = nuevas_resps.get(idpreg, '')
+                    if len(str(respuesta).strip()) < minimo_diferente:
+                        return {
+                            'texto': (
+                                'Las celdas con mínimo diferente deben tener al menos '
+                                + str(minimo_diferente)
+                                + ' caracteres.'
+                            ),
+                            'score': self.score,
+                            'nro_de_intentos': self.max_attempts,
+                            'intentos': self.attempts,
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                        }
+                    continue
                 if not self.normalize_required_flag(preg_data.get('obligatoria', False)):
                     continue
                 respuesta = nuevas_resps.get(idpreg, '')
@@ -543,6 +607,26 @@ class tablelonginputXBlock(XBlock):
                         continue
                     respuesta = nuevas_resps.get(idpreg, '')
                     texto = str(respuesta).strip()
+                    minimo_diferente_activo = self.normalize_required_flag(
+                        preg_data.get('minimo_diferente_activo', False)
+                    )
+                    minimo_diferente = self.normalize_minimo_diferente(
+                        preg_data.get('minimo_diferente', 0)
+                    )
+                    if minimo_diferente_activo:
+                        if minimo_diferente > 0 and len(texto) < minimo_diferente:
+                            return {
+                                'texto': (
+                                    'Las celdas con mínimo diferente deben tener al menos '
+                                    + str(minimo_diferente)
+                                    + ' caracteres.'
+                                ),
+                                'score': self.score,
+                                'nro_de_intentos': self.max_attempts,
+                                'intentos': self.attempts,
+                                'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                            }
+                        continue
                     obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
                     if obligatoria and len(texto) < min_len:
                         return {
@@ -642,12 +726,19 @@ class tablelonginputXBlock(XBlock):
                 'tipo_celda': tipo_celda,
                 'texto_celda': p.get('texto_celda', ''),
                 'texto_input': p.get('texto_input', ''),
-                'obligatoria': self.normalize_required_flag(p.get('obligatoria', False))
+                'minimo_diferente_activo': self.normalize_required_flag(
+                    p.get('minimo_diferente_activo', False)
+                ),
+                'minimo_diferente': self.normalize_minimo_diferente(
+                    p.get('minimo_diferente', 0)
+                ),
             }
 
         self.display_name = data.get('display_name')
-        self.texto_verdadero = data.get('texto_verdadero')
-        self.texto_falso = data.get('texto_falso')
+        if 'texto_verdadero' in data and data.get('texto_verdadero') is not None:
+            self.texto_verdadero = data.get('texto_verdadero')
+        if 'texto_falso' in data and data.get('texto_falso') is not None:
+            self.texto_falso = data.get('texto_falso')
         self.texto_header_num = data.get('texto_header_num', self.texto_header_num)
         self.numbering_type = data.get('numbering_type', self.numbering_type)
         self.pretext_num = data.get('pretext_num', self.pretext_num)
