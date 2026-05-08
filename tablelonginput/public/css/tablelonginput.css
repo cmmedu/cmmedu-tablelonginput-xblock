@@ -10,36 +10,51 @@
 }
 */
 
+.tli_block .action .tli-submit,
 .tli_block .action .check {
-    height: 40px;
-    vertical-align: middle;
-    border-color: #0075b4;
-    background: #0075b4;
-    color: #fcfcfc;
+    background-color: #dc0000 !important;
+    background-image: none !important;
+    border-color: white !important;
+    box-sizing: border-box !important;
+    border-radius: 10px !important;
+    padding: 8px 20px !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+    font-weight: normal !important;
+    text-transform: capitalize !important;
+    height: auto !important;
+    width: auto !important;
+    min-width: 100px !important;
     font-size: 16px;
-    text-shadow: none;
-    box-shadow: none;
-    border-width: 1px;
-    border-radius: 0.1875rem;
-    width: auto;
-    height: auto;
-    padding: 0.625rem 1.25rem;
-    font-weight: normal;
-    text-shadow: none;
-    text-transform: capitalize;
-    cursor: pointer;
-  }
-  
-.tli_block .action .check:hover {
-    background-color: #065683;
- }
+}
 
- .tli_block .action .check[disabled=disabled], .tli_block .action .check:disabled {
-    border-color: #d2d0d0;
-    background: #f2f3f3!important;
-    color: #676666;
-    cursor:auto;
-    border-style: solid;
+.tli_block .action .tli-submit:hover,
+.tli_block .action .check:hover {
+    background-color: #750101 !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+}
+
+.tli_block .action .tli-submit:focus,
+.tli_block .action .check:focus {
+    background-color: #b30000 !important;
+    box-shadow: none !important;
+    border-width: 1px !important;
+}
+
+.tli_block .action .tli-submit[disabled=disabled],
+.tli_block .action .tli-submit:disabled,
+.tli_block .action .check[disabled=disabled],
+.tli_block .action .check:disabled {
+    border-color: #d2d0d0 !important;
+    background: #f2f3f3 !important;
+    color: #676666 !important;
+    cursor: auto !important;
+    border-style: solid !important;
 }
 
 .tli_block .submission-feedback{

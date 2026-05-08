@@ -3,7 +3,8 @@ function TLIXBlock(runtime, element, settings) {
 
     var $ = window.jQuery;
     var $element = $(element);
-    var buttonCheck = $element.find('.check');
+    // Support current button class and legacy class names.
+    var buttonCheck = $element.find('.tli-submit, .check');
     var textareas = $element.find('textarea.student_answer');
     var subFeedback = $element.find('.submission-feedback');
     var areaHeight = $element.data('area-height');
