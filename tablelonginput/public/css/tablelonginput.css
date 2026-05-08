@@ -155,6 +155,14 @@
     min-width: 100%;
 }
 
+.tli_block .tli-table-content .student_answer_plaintext {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 /* Sin thead: esquinas superiores en la primera fila del tbody */
 .tli_block .tli-table-content > tbody:first-child > tr:first-child > *:first-child {
     border-top-left-radius: 10px;

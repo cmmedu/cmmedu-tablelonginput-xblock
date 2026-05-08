@@ -79,11 +79,11 @@
 
   <div class="action">
             {% if no_mas_intentos or preguntas|length == 0 %}
-              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="status_{{ location }}" disabled="disabled">
+              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="submission_feedback_{{ location }}" disabled="disabled">
             {% elif is_past_due or not respondido %}
-              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="status_{{ location }}" disabled="disabled">
+              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="submission_feedback_{{ location }}" disabled="disabled">
             {% else %}
-              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="status_{{ location }}">
+              <button class="tli-submit Submit submit" data-checking="Enviando..." data-value="Enviar" aria-describedby="submission_feedback_{{ location }}">
             {% endif %}
                 <span>Enviar</span>
               </button>
