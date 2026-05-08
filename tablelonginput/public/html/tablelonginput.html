@@ -3,6 +3,11 @@
   data-min-caracter-input="{{ min_caracter_input }}">
   <h3 class="tli-header problem-header">{{ display_name }}</h3>
   <div class="problem-progress">{{ problem_progress }}</div>
+  {% if show_correctness != 'never' or indicator_class == 'unanswered' %}
+  <div class="status {{ indicator_class }}" id="status_{{ location }}" aria-hidden="true"></div>
+  {% else %}
+  <div class="status" id="status_{{ location }}" aria-hidden="true"></div>
+  {% endif %}
   {% if no_mas_intentos or preguntas|length == 0 %}
   <div class="tablagrande noclick" id="longinputtable">
     {% else %}

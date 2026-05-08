@@ -89,6 +89,25 @@
     padding-bottom: 20px;
 }
 
+/*
+ * .status existe solo para integrarse con Eol Conditional (clases unanswered/correct/incorrect).
+ * No debe mostrar al estudiante ningún juicio de correctitud; anulamos estilos del tema.
+ */
+.tli_block .status {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
 .student_answer{
     min-width: 324px;
 }

@@ -442,6 +442,8 @@ class tablelonginputXBlock(XBlock):
                 'postext_num': self.postext_num,
                 'columnas_por_fila': columnas_por_fila,
                 'min_caracter_input': min_caracter_input,
+                'indicator_class': self.get_indicator_class(),
+                'show_correctness': self.get_show_correctness(),
             }
         )
         template = loader.render_django_template(
@@ -583,7 +585,8 @@ class tablelonginputXBlock(XBlock):
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
+                            'indicator_class': self.get_indicator_class(),
                         }
                     continue
                 if not self.normalize_required_flag(preg_data.get('obligatoria', False)):
@@ -595,7 +598,8 @@ class tablelonginputXBlock(XBlock):
                         'score': self.score,
                         'nro_de_intentos': self.max_attempts,
                         'intentos': self.attempts,
-                        'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                        'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
+                        'indicator_class': self.get_indicator_class(),
                     }
 
             min_len = self.normalize_min_caracter_input(self.min_caracter_input)
@@ -624,7 +628,8 @@ class tablelonginputXBlock(XBlock):
                                 'score': self.score,
                                 'nro_de_intentos': self.max_attempts,
                                 'intentos': self.attempts,
-                                'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                                'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
+                                'indicator_class': self.get_indicator_class(),
                             }
                         continue
                     obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
@@ -638,7 +643,8 @@ class tablelonginputXBlock(XBlock):
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
+                            'indicator_class': self.get_indicator_class(),
                         }
                     if not obligatoria and texto and len(texto) < min_len:
                         return {
@@ -650,7 +656,8 @@ class tablelonginputXBlock(XBlock):
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else ''
+                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
+                            'indicator_class': self.get_indicator_class(),
                         }
 
             self.respuestas = nuevas_resps
@@ -685,7 +692,8 @@ class tablelonginputXBlock(XBlock):
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
                     'intentos': self.attempts, 
-                    'last_submission_time': self.last_submission_time.isoformat()
+                    'last_submission_time': self.last_submission_time.isoformat(),
+                    'indicator_class': self.get_indicator_class(),
                     }
         else:
             return {
@@ -693,7 +701,8 @@ class tablelonginputXBlock(XBlock):
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
                     'intentos': self.attempts, 
-                    'last_submission_time': self.last_submission_time
+                    'last_submission_time': self.last_submission_time,
+                    'indicator_class': self.get_indicator_class(),
                     }
 
 

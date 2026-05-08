@@ -7,6 +7,7 @@ function TLIXBlock(runtime, element, settings) {
     var buttonCheck = $element.find('.tli-submit, .check');
     var textareas = $element.find('textarea.student_answer');
     var subFeedback = $element.find('.submission-feedback');
+    var statusDiv = $element.find('.status');
     var areaHeight = $element.data('area-height');
     var minCaracterInput = parseInt($element.attr('data-min-caracter-input'), 10);
     if (isNaN(minCaracterInput) || minCaracterInput < 0) {
@@ -29,6 +30,10 @@ function TLIXBlock(runtime, element, settings) {
     }
 
     function updateText(result) {
+        if (result.indicator_class && statusDiv.length) {
+            statusDiv.removeClass('correct incorrect unanswered');
+            statusDiv.addClass(result.indicator_class);
+        }
         if (result.nro_de_intentos > 0) {
             if (result.nro_de_intentos === 1) {
                 subFeedback.text('Ha realizado ' + result.intentos + ' de ' + result.nro_de_intentos + ' intento');
