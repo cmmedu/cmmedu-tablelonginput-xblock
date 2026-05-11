@@ -194,6 +194,13 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings,
     )
 
+    color_de_celdas_completadas = String(
+        display_name="Color borde celdas que cumplen el mínimo",
+        help="Color CSS en hexadecimal (#rrggbb o #rgb) para el borde del textarea cuando cumple el mínimo de caracteres.",
+        default="#008801",
+        scope=Scope.settings,
+    )
+
     columnas_por_fila = Integer(
         display_name="Cantidad de celdas por fila",
         help="Cantidad de celdas de contenido por fila (sin contar numeración)",
@@ -268,6 +275,19 @@ class tablelonginputXBlock(XBlock):
         except (TypeError, ValueError):
             return 2
         return max(1, min(3, parsed))
+
+    @staticmethod
+    def normalize_color_de_celdas_completadas(value):
+        """
+        Returns a safe #rgb or #rrggbb color for CSS (Studio / borde celdas completadas).
+        """
+        default = '#008801'
+        if value is None:
+            return default
+        candidate = str(value).strip()
+        if re.match(r'^#[0-9a-fA-F]{3}$', candidate) or re.match(r'^#[0-9a-fA-F]{6}$', candidate):
+            return candidate
+        return default
 
     @staticmethod
     def normalize_min_caracter_input(value):
@@ -442,6 +462,9 @@ class tablelonginputXBlock(XBlock):
                 'postext_num': self.postext_num,
                 'columnas_por_fila': columnas_por_fila,
                 'min_caracter_input': min_caracter_input,
+                'color_de_celdas_completadas': self.normalize_color_de_celdas_completadas(
+                    self.color_de_celdas_completadas
+                ),
                 'indicator_class': self.get_indicator_class(),
                 'show_correctness': self.get_show_correctness(),
             }
@@ -519,6 +542,9 @@ class tablelonginputXBlock(XBlock):
                 'postext_num': self.postext_num,
                 'columnas_por_fila': cols,
                 'min_caracter_input': self.normalize_min_caracter_input(self.min_caracter_input),
+                'color_de_celdas_completadas': self.normalize_color_de_celdas_completadas(
+                    self.color_de_celdas_completadas
+                ),
             }
         )
         template = loader.render_django_template(
@@ -582,6 +608,7 @@ class tablelonginputXBlock(XBlock):
                                 + str(minimo_diferente)
                                 + ' caracteres.'
                             ),
+                            'min_chars_error': True,
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
@@ -625,6 +652,7 @@ class tablelonginputXBlock(XBlock):
                                     + str(minimo_diferente)
                                     + ' caracteres.'
                                 ),
+                                'min_chars_error': True,
                                 'score': self.score,
                                 'nro_de_intentos': self.max_attempts,
                                 'intentos': self.attempts,
@@ -640,6 +668,7 @@ class tablelonginputXBlock(XBlock):
                                 + str(min_len)
                                 + ' caracteres.'
                             ),
+                            'min_chars_error': True,
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
@@ -653,6 +682,7 @@ class tablelonginputXBlock(XBlock):
                                 + str(min_len)
                                 + ' caracteres.'
                             ),
+                            'min_chars_error': True,
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
                             'intentos': self.attempts,
@@ -767,6 +797,9 @@ class tablelonginputXBlock(XBlock):
         self.area_height = self.normalize_area_height(data.get('area_height'))
         self.min_caracter_input = self.normalize_min_caracter_input(
             data.get('min_caracter_input', self.min_caracter_input)
+        )
+        self.color_de_celdas_completadas = self.normalize_color_de_celdas_completadas(
+            data.get('color_de_celdas_completadas', self.color_de_celdas_completadas)
         )
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))

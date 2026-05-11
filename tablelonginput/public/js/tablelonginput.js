@@ -8,15 +8,95 @@ function TLIXBlock(runtime, element, settings) {
     var textareas = $element.find('textarea.student_answer');
     var subFeedback = $element.find('.submission-feedback');
     var statusDiv = $element.find('.status');
+    var $minWarn = $element.find('.tli-minlength-warning');
     var areaHeight = $element.data('area-height');
     var minCaracterInput = parseInt($element.attr('data-min-caracter-input'), 10);
     if (isNaN(minCaracterInput) || minCaracterInput < 0) {
         minCaracterInput = 0;
     }
     var handlerUrl = runtime.handlerUrl(element, 'responder');
+    var minCharsBannerMsg = 'Verifique que sus respuestas cumplen con el mínimo de caracteres.';
 
     if (areaHeight) {
         textareas.css('height', areaHeight);
+    }
+
+    function hideMinLengthWarning() {
+        $minWarn.attr('hidden', 'hidden');
+        $minWarn.empty();
+    }
+
+    function showMinLengthWarning() {
+        $minWarn.removeAttr('hidden');
+        $minWarn.text(minCharsBannerMsg);
+    }
+
+    function minLengthViolationForTextarea($ta) {
+        var val = ($ta.val() || '').trim();
+        var minAttr = parseInt($ta.attr('minlength'), 10);
+        if (isNaN(minAttr) || minAttr < 0) {
+            minAttr = 0;
+        }
+        var isRequired = $ta.prop('required');
+        if (minAttr > 0) {
+            if (isRequired && val.length < minAttr) {
+                return true;
+            }
+            if (!isRequired && val.length > 0 && val.length < minAttr) {
+                return true;
+            }
+        } else if (minCaracterInput > 0) {
+            if (isRequired && val.length < minCaracterInput) {
+                return true;
+            }
+            if (!isRequired && val.length > 0 && val.length < minCaracterInput) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function hasMinLengthViolation() {
+        var found = false;
+        $element.find('textarea.student_answer').each(function() {
+            if (minLengthViolationForTextarea($(this))) {
+                found = true;
+                return false;
+            }
+        });
+        return found;
+    }
+
+    function textareaHasApplicableMinRequirement($ta) {
+        var val = ($ta.val() || '').trim();
+        var minAttr = parseInt($ta.attr('minlength'), 10);
+        if (isNaN(minAttr) || minAttr < 0) {
+            minAttr = 0;
+        }
+        if (minAttr > 0) {
+            return true;
+        }
+        if (minCaracterInput > 0 && $ta.prop('required')) {
+            return true;
+        }
+        if (minCaracterInput > 0 && val.length > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    function refreshMinSatisfiedForTextarea($ta) {
+        if (!textareaHasApplicableMinRequirement($ta) || minLengthViolationForTextarea($ta)) {
+            $ta.removeClass('tli-min-satisfied');
+        } else {
+            $ta.addClass('tli-min-satisfied');
+        }
+    }
+
+    function refreshAllMinSatisfiedClasses() {
+        $element.find('textarea.student_answer').each(function() {
+            refreshMinSatisfiedForTextarea($(this));
+        });
     }
 
     function renderAnswersAsPlainText() {
@@ -34,11 +114,23 @@ function TLIXBlock(runtime, element, settings) {
             statusDiv.removeClass('correct incorrect unanswered');
             statusDiv.addClass(result.indicator_class);
         }
+
+        if (result.min_chars_error) {
+            showMinLengthWarning();
+            if (result.texto) {
+                subFeedback.text(result.texto);
+            }
+        } else {
+            hideMinLengthWarning();
+        }
+
         if (result.nro_de_intentos > 0) {
-            if (result.nro_de_intentos === 1) {
-                subFeedback.text('Ha realizado ' + result.intentos + ' de ' + result.nro_de_intentos + ' intento');
-            } else {
-                subFeedback.text('Ha realizado ' + result.intentos + ' de ' + result.nro_de_intentos + ' intentos');
+            if (!result.min_chars_error) {
+                if (result.nro_de_intentos === 1) {
+                    subFeedback.text('Ha realizado ' + result.intentos + ' de ' + result.nro_de_intentos + ' intento');
+                } else {
+                    subFeedback.text('Ha realizado ' + result.intentos + ' de ' + result.nro_de_intentos + ' intentos');
+                }
             }
 
             if (result.intentos >= result.nro_de_intentos) {
@@ -55,15 +147,18 @@ function TLIXBlock(runtime, element, settings) {
         }
 
         buttonCheck.html("<span>" + buttonCheck[0].dataset.value + "</span>");
+        refreshAllMinSatisfiedClasses();
     }
 
-    textareas.on('input', function(eventObject) {
+    $element.on('input', 'textarea.student_answer', function(eventObject) {
         if (!settings.is_past_due) {
             buttonCheck.attr("disabled", false);
         }
+        hideMinLengthWarning();
+        refreshMinSatisfiedForTextarea($(this));
         eventObject.preventDefault();
     });
-    
+
 
     buttonCheck.click(function(eventObject) {
         eventObject.preventDefault();
@@ -75,34 +170,27 @@ function TLIXBlock(runtime, element, settings) {
             }
         });
         if (missingRequired) {
+            hideMinLengthWarning();
             subFeedback.text('Debe completar todas las celdas obligatorias antes de enviar.');
             return;
         }
-        if (minCaracterInput > 0) {
-            var minLenMsg = false;
-            $element.find('.student_answer').each(function() {
-                var $ta = $(this);
-                var val = ($ta.val() || '').trim();
-                var isRequired = $ta.prop('required');
-                if (isRequired && val.length < minCaracterInput) {
-                    minLenMsg = true;
-                    return false;
-                }
-                if (!isRequired && val.length > 0 && val.length < minCaracterInput) {
-                    minLenMsg = true;
-                    return false;
-                }
-            });
-            if (minLenMsg) {
+        if (hasMinLengthViolation()) {
+            showMinLengthWarning();
+            if (minCaracterInput > 0) {
                 subFeedback.text(
                     'Cada respuesta debe tener al menos ' + minCaracterInput + ' caracteres ' +
                     '(las celdas no obligatorias pueden quedar vacías).'
                 );
-                return;
+            } else {
+                subFeedback.text(
+                    'Una o más celdas no alcanzan el número mínimo de caracteres indicado.'
+                );
             }
+            return;
         }
         buttonCheck.html("<span>" + buttonCheck[0].dataset.checking + "</span>");
         buttonCheck.attr("disabled", true);
+        hideMinLengthWarning();
         if ($.isFunction(runtime.notify)) {
             runtime.notify('tli-submit', {
                 message: 'Submitting...',
@@ -120,7 +208,11 @@ function TLIXBlock(runtime, element, settings) {
             type: "POST",
             url: handlerUrl,
             data: JSON.stringify({"respuestas": resps}),
-            success: updateText
+            success: updateText,
+            error: function() {
+                buttonCheck.html("<span>" + buttonCheck[0].dataset.value + "</span>");
+                buttonCheck.attr("disabled", false);
+            }
         });
         if ($.isFunction(runtime.notify)) {
             runtime.notify('tli-submit', {
@@ -129,4 +221,5 @@ function TLIXBlock(runtime, element, settings) {
         }
     });
 
+    refreshAllMinSatisfiedClasses();
 }

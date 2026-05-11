@@ -44,10 +44,12 @@ function TLIEditBlock(runtime, element) {
       nuevaPregunta += '<input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_'+id+'" pregunta-id="'+id+'" type="checkbox" /> Número mínimo diferente';
       nuevaPregunta += '</label>';
       nuevaPregunta += '</div>';
-      nuevaPregunta += '<div class="wrapper-comp-setting cell-minimo-diferente-value-field" pregunta-id="'+id+'">';
+      nuevaPregunta += '<div class="wrapper-comp-setting cell-minimo-diferente-value-field tli-setting-with-help" pregunta-id="'+id+'">';
+      nuevaPregunta += '<div class="tli-setting-top-row">';
       nuevaPregunta += '<label class="label setting-label" for="minimo_diferente_'+id+'">Mínimo diferente para esta celda</label>';
       nuevaPregunta += '<input class="input setting-input" name="minimo_diferente" id="minimo_diferente_'+id+'" pregunta-id="'+id+'" value="0" type="number" step="1" min="0" max="1000" />';
-      nuevaPregunta += '<span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo para esta celda.</span>';
+      nuevaPregunta += '</div>';
+      nuevaPregunta += '<span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo de caracteres para esta celda.</span>';
       nuevaPregunta += '</div>';
       nuevaPregunta += '</div>';
       return nuevaPregunta;
@@ -187,6 +189,7 @@ function TLIEditBlock(runtime, element) {
         nro_de_intentos: $(element).find('input[name=nro_de_intentos]').val(),
         area_height: $(element).find('input[name=area_height]').val(),
         min_caracter_input: $(element).find('input[name=min_caracter_input]').val(),
+        color_de_celdas_completadas: $(element).find('input[name=color_de_celdas_completadas]').val(),
         numbering_type: $(element).find('select.numbering_type').val(),
         pretext_num: $(element).find('input[name=pretext_num]').val(),
         postext_num: $(element).find('input[name=postext_num]').val(),

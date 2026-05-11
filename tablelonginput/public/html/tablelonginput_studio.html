@@ -31,10 +31,21 @@
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
-      <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="min_caracter_input">Mínimo de caracteres por respuesta</label>
-        <input class="input setting-input" name="min_caracter_input" id="min_caracter_input" value="{{ min_caracter_input }}" type="number" step="1" min="0" max="1000" />
+      <div class="wrapper-comp-setting tli-setting-with-help">
+        <div class="tli-setting-top-row">
+          <label class="label setting-label" for="min_caracter_input">Mínimo de caracteres por respuesta</label>
+          <input class="input setting-input" name="min_caracter_input" id="min_caracter_input" value="{{ min_caracter_input }}" type="number" step="1" min="0" max="1000" />
+        </div>
         <span class="help setting-help">0 = sin límite. Solo aplica a celdas tipo input.</span>
+      </div>
+    </li>
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting tli-setting-with-help">
+        <div class="tli-setting-top-row">
+          <label class="label setting-label" for="color_de_celdas_completadas">Color borde al cumplir el mínimo de caracteres</label>
+          <input class="input setting-input" name="color_de_celdas_completadas" id="color_de_celdas_completadas" value="{{ color_de_celdas_completadas }}" type="text" maxlength="7" />
+        </div>
+        <span class="help setting-help">Hexadecimal (#rrggbb o #rgb), por defecto #008801.</span>
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
@@ -128,11 +139,13 @@
               Número mínimo diferente
             </label>
           </div>
-          <div class="wrapper-comp-setting cell-minimo-diferente-value-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="minimo_diferente_{{key}}">
-              Mínimo diferente para esta celda
-            </label>
-            <input class="input setting-input" name="minimo_diferente" id="minimo_diferente_{{key}}" pregunta-id="{{key}}" value="{{ value.minimo_diferente|default:0 }}" type="number" step="1" min="0" max="1000" />
+          <div class="wrapper-comp-setting cell-minimo-diferente-value-field tli-setting-with-help" pregunta-id="{{key}}">
+            <div class="tli-setting-top-row">
+              <label class="label setting-label" for="minimo_diferente_{{key}}">
+                Mínimo diferente para esta celda
+              </label>
+              <input class="input setting-input" name="minimo_diferente" id="minimo_diferente_{{key}}" pregunta-id="{{key}}" value="{{ value.minimo_diferente|default:0 }}" type="number" step="1" min="0" max="1000" />
+            </div>
             <span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo de caracteres para esta celda.</span>
           </div>
         </div>

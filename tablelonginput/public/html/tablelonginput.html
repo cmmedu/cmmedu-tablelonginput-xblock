@@ -1,5 +1,7 @@
 {% load i18n %}
-<div class="problem tli_block problems-wrapper" data-area-height="{{ area_height }}"
+<div class="problem tli_block problems-wrapper"
+  style="--tli-celda-completada: {{ color_de_celdas_completadas }};"
+  data-area-height="{{ area_height }}"
   data-min-caracter-input="{{ min_caracter_input }}">
   <h3 class="tli-header problem-header">{{ display_name }}</h3>
   <div class="problem-progress">{{ problem_progress }}</div>
@@ -81,6 +83,8 @@
         </tbody>
       </table>
     </div>
+
+  <div class="tli-minlength-warning" hidden aria-live="polite"></div>
 
   <div class="action">
             {% if no_mas_intentos or preguntas|length == 0 %}

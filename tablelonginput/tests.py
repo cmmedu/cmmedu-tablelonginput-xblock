@@ -62,8 +62,23 @@ class TliIXblockTestCase(unittest.TestCase):
         self.assertEqual(self.xblock.numbering_type, 'none')
         self.assertEqual(self.xblock.pretext_num, '')
         self.assertEqual(self.xblock.postext_num, '. ')
+        self.assertEqual(self.xblock.color_de_celdas_completadas, '#008801')
 
         self.assertEqual(self.xblock.respondido, False)
+
+    def test_normalize_color_de_celdas_completadas(self):
+        self.assertEqual(
+            tablelonginputXBlock.normalize_color_de_celdas_completadas('#f00'),
+            '#f00',
+        )
+        self.assertEqual(
+            tablelonginputXBlock.normalize_color_de_celdas_completadas('#ff0011'),
+            '#ff0011',
+        )
+        self.assertEqual(
+            tablelonginputXBlock.normalize_color_de_celdas_completadas('not-a-color'),
+            '#008801',
+        )
 
     def test_basic_answer(self):
         #pruebo respuestas buenas y malas con el problema default
