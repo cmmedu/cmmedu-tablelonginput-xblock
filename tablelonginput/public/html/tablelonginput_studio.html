@@ -2,95 +2,104 @@
   <ul class="list-input settings-list">
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="display_name">Display Name</label>
+        <label class="label setting-label" for="display_name">{{ studio_ui.label_display_name }}</label>
+        <span class="help setting-help">{{ studio_ui.help_display_name }}</span>
         <input class="input setting-input" name="display_name" id="display_name" value="{{display_name}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="texto_falso">Texto</label>
+        <label class="label setting-label" for="texto_falso">{{ studio_ui.label_texto }}</label>
+        <span class="help setting-help">{{ studio_ui.help_texto }}</span>
         <input class="input setting-input" name="texto_falso" id="texto_falso" value="{{texto_falso}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="weight">Peso</label>
+        <label class="label setting-label" for="weight">{{ studio_ui.label_weight }}</label>
+        <span class="help setting-help">{{ studio_ui.help_weight }}</span>
         <input class="input setting-input" name="weight" id="weight" value="{{weight}}" type="number" step="1" min="0" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="nro_de_intentos">Nro. de Intentos</label>
+        <label class="label setting-label" for="nro_de_intentos">{{ studio_ui.label_attempts }}</label>
+        <span class="help setting-help">{{ studio_ui.help_attempts }}</span>
         <input class="input setting-input" name="nro_de_intentos" id="nro_de_intentos" value="{{nro_de_intentos}}" type="number" step="1" min="1" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="area_height">Altura del área de respuesta</label>
+        <label class="label setting-label" for="area_height">{{ studio_ui.label_area_height }}</label>
+        <span class="help setting-help">{{ studio_ui.help_area_height }}</span>
         <input class="input setting-input" name="area_height" id="area_height" value="{{area_height}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting tli-setting-with-help">
         <div class="tli-setting-top-row">
-          <label class="label setting-label" for="min_caracter_input">Mínimo de caracteres por respuesta</label>
+          <label class="label setting-label" for="min_caracter_input">{{ studio_ui.label_min_caracter_input }}</label>
           <input class="input setting-input" name="min_caracter_input" id="min_caracter_input" value="{{ min_caracter_input }}" type="number" step="1" min="0" max="1000" />
         </div>
-        <span class="help setting-help">0 = sin límite. Solo aplica a celdas tipo input.</span>
+        <span class="help setting-help">{{ studio_ui.help_min_caracter_input }}</span>
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting tli-setting-with-help">
         <div class="tli-setting-top-row">
-          <label class="label setting-label" for="color_de_celdas_completadas">Color borde al cumplir el mínimo de caracteres</label>
+          <label class="label setting-label" for="color_de_celdas_completadas">{{ studio_ui.label_color_border_completed }}</label>
           <input class="input setting-input" name="color_de_celdas_completadas" id="color_de_celdas_completadas" value="{{ color_de_celdas_completadas }}" type="text" maxlength="7" />
         </div>
-        <span class="help setting-help">Hexadecimal (#rrggbb o #rgb), por defecto #008801.</span>
+        <span class="help setting-help">{{ studio_ui.help_color_border_completed }}</span>
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="numbering_type">Tipo de numeración</label>
+        <label class="label setting-label" for="numbering_type">{{ studio_ui.label_numbering_type }}</label>
         <select class="numbering_type" name="numbering_type">
           <option value="none" {% if numbering_type == 'none' %}selected{% endif %}>
-            Sin numeración
+            {{ studio_ui.opt_numbering_none }}
           </option>
           <option value="numbers" {% if numbering_type == 'numbers' %}selected{% endif %}>
-            1, 2, 3...
+            {{ studio_ui.opt_numbering_numbers }}
           </option>
           <option value="numbers_zero" {% if numbering_type == 'numbers_zero' %}selected{% endif %}>
-            0, 1, 2...
+            {{ studio_ui.opt_numbering_numbers_zero }}
           </option>
           <option value="letters" {% if numbering_type == 'letters' %}selected{% endif %}>
-            a, b, c...
+            {{ studio_ui.opt_numbering_letters }}
           </option>
           <option value="roman" {% if numbering_type == 'roman' %}selected{% endif %}>
-            i, ii, iii...
+            {{ studio_ui.opt_numbering_roman }}
           </option>
         </select>
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="texto_header_num">Texto de cabecera de la numeración</label>
+        <label class="label setting-label" for="texto_header_num">{{ studio_ui.label_texto_header_num }}</label>
+        <span class="help setting-help">{{ studio_ui.help_texto_header_num }}</span>
         <input class="input setting-input" name="texto_header_num" id="texto_header_num" value="{{texto_header_num}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="pretext_num">Texto antes de la numeración</label>
+        <label class="label setting-label" for="pretext_num">{{ studio_ui.label_pretext_num }}</label>
+        <span class="help setting-help">{{ studio_ui.help_pretext_num }}</span>
         <input class="input setting-input" name="pretext_num" id="pretext_num" value="{{pretext_num}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="postext_num">Texto después de la numeración</label>
+        <label class="label setting-label" for="postext_num">{{ studio_ui.label_postext_num }}</label>
+        <span class="help setting-help">{{ studio_ui.help_postext_num }}</span>
         <input class="input setting-input" name="postext_num" id="postext_num" value="{{postext_num}}" type="text" />
       </div>
     </li>
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
-        <label class="label setting-label" for="columnas_por_fila">Celdas por fila (sin contar numeración)</label>
+        <label class="label setting-label" for="columnas_por_fila">{{ studio_ui.label_columnas_por_fila }}</label>
+        <span class="help setting-help">{{ studio_ui.help_columnas_por_fila }}</span>
         <select class="columnas_por_fila" name="columnas_por_fila" id="columnas_por_fila">
           <option value="1" {% if columnas_por_fila == 1 %}selected{% endif %}>1</option>
           <option value="2" {% if columnas_por_fila == 2 %}selected{% endif %}>2</option>
@@ -100,17 +109,17 @@
     </li>
     <li class="field comp-setting-entry is-set" id="listapreguntas">
       <div class="tli-studio-row tli-studio-header-row">
-        <div class="tli-studio-row-title">Fila 0</div>
+        <div class="tli-studio-row-title">{{ studio_ui.title_row_zero }}</div>
         <div class="wrapper-comp-setting">
           <label class="label setting-label" for="mostrar_header_tabla">
             <input class="input setting-input" name="mostrar_header_tabla" id="mostrar_header_tabla" type="checkbox" {% if mostrar_header_tabla %}checked="checked"{% endif %} />
-            Mostrar encabezado en la tabla
+            {{ studio_ui.label_mostrar_header_tabla }}
           </label>
         </div>
         <div id="tli-studio-header-cells">
           {% for cell in header_cells_studio %}
           <div class="wrapper-comp-setting tli-studio-header-cell" data-col="{{ cell.idx }}">
-            <label class="label setting-label" for="header_celda_{{ cell.idx }}">Encabezado columna {{ cell.num }}</label>
+            <label class="label setting-label" for="header_celda_{{ cell.idx }}">{{ studio_ui.header_column_prefix }} {{ cell.num }}{{ studio_ui.header_column_suffix_html }}</label>
             <input class="input setting-input header-celda-input" name="header_celda" id="header_celda_{{ cell.idx }}" data-col="{{ cell.idx }}" type="text" value="{{ cell.text }}" />
           </div>
           {% endfor %}
@@ -119,34 +128,34 @@
       {% for key, value in preguntas %}
         <div class="tli-studio-cell div-pregunta-{{key}}">
           <div class="wrapper-comp-setting">
-            <label class="label setting-label" for="tipo_celda">Tipo de celda</label>
+            <label class="label setting-label" for="tipo_celda">{{ studio_ui.label_tipo_celda }}</label>
             <select class="input setting-input" name="tipo_celda" pregunta-id="{{key}}">
-              <option value="texto" {% if value.tipo_celda|default:'input' == 'texto' %}selected{% endif %}>Texto</option>
-              <option value="input" {% if value.tipo_celda|default:'input' == 'input' %}selected{% endif %}>Input</option>
+              <option value="texto" {% if value.tipo_celda|default:'input' == 'texto' %}selected{% endif %}>{{ studio_ui.opt_tipo_texto }}</option>
+              <option value="input" {% if value.tipo_celda|default:'input' == 'input' %}selected{% endif %}>{{ studio_ui.opt_tipo_input }}</option>
             </select>
           </div>
           <div class="wrapper-comp-setting cell-texto-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="texto_celda">Texto</label>
+            <label class="label setting-label" for="texto_celda">{{ studio_ui.label_texto_celda }}</label>
             <input class="input setting-input" name="texto_celda" pregunta-id="{{key}}" value="{{ value.texto_celda|default:value.enunciado }}" type="text" />
           </div>
           <div class="wrapper-comp-setting cell-input-field" pregunta-id="{{key}}">
-            <label class="label setting-label" for="texto_input">Texto antes del input (opcional)</label>
+            <label class="label setting-label" for="texto_input">{{ studio_ui.label_texto_input }}</label>
             <input class="input setting-input" name="texto_input" pregunta-id="{{key}}" value="{{ value.texto_input|default:value.enunciado }}" type="text" />
           </div>
           <div class="wrapper-comp-setting cell-minimo-diferente-check-field" pregunta-id="{{key}}">
             <label class="label setting-label" for="minimo_diferente_activo_{{key}}">
               <input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.minimo_diferente_activo|default:False %}checked{% endif %} />
-              Número mínimo diferente
+              {{ studio_ui.label_minimo_diferente_activo }}
             </label>
           </div>
           <div class="wrapper-comp-setting cell-minimo-diferente-value-field tli-setting-with-help" pregunta-id="{{key}}">
             <div class="tli-setting-top-row">
               <label class="label setting-label" for="minimo_diferente_{{key}}">
-                Mínimo diferente para esta celda
+                {{ studio_ui.label_minimo_diferente }}
               </label>
               <input class="input setting-input" name="minimo_diferente" id="minimo_diferente_{{key}}" pregunta-id="{{key}}" value="{{ value.minimo_diferente|default:0 }}" type="number" step="1" min="0" max="1000" />
             </div>
-            <span class="help setting-help">0 = no obligatoria. Mayor a 0 = mínimo de caracteres para esta celda.</span>
+            <span class="help setting-help">{{ studio_ui.help_minimo_diferente_cell }}</span>
           </div>
         </div>
       {% endfor %}
@@ -155,13 +164,13 @@
   <div class="xblock-actions">
     <ul>
       <li class="action-item">
-        <a href="#" class="button action-primary save-button">Save</a>
+        <a href="#" class="button action-primary save-button">{{ studio_ui.btn_save }}</a>
       </li>
       <li class="action-item">
-        <a href="#" class="button cancel-button">Cancel</a>
+        <a href="#" class="button cancel-button">{{ studio_ui.btn_cancel }}</a>
       </li>
       <li class="action-item">
-          <a href="#" class="button add-button">Agregar otra fila</a>
+          <a href="#" class="button add-button">{{ studio_ui.btn_add_row }}</a>
       </li>
     </ul>
   </div>

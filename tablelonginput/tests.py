@@ -110,6 +110,40 @@ class TliIXblockTestCase(unittest.TestCase):
         response = self.xblock.responder(request)
         self.assertEqual(response.json_body['intentos'], 2)
 
+    def test_min_length_rejection_does_not_consume_attempt(self):
+        """
+        Si no se cumple el mínimo de caracteres (mismo criterio que la vista),
+        no debe incrementarse attempts ni publicarse nota.
+        """
+        self.xblock.min_caracter_input = 10
+        self.xblock.preguntas = {
+            '1': {'tipo_celda': 'input', 'texto_input': 'P1'},
+            '2': {'tipo_celda': 'texto', 'texto_celda': 'Solo texto'},
+        }
+        self.xblock.attempts = 0
+        request = TestRequest()
+        request.method = 'POST'
+        request.body = json.dumps(
+            {'respuestas': [{'name': '1', 'value': 'corto'}]}
+        ).encode('utf-8')
+        response = self.xblock.responder(request)
+        self.assertEqual(self.xblock.attempts, 0)
+        self.assertTrue(response.json_body.get('min_chars_error'))
+
+    def test_min_length_numeric_question_id_still_validates(self):
+        """name numérico en JSON debe alinearse con claves string en preguntas."""
+        self.xblock.min_caracter_input = 5
+        self.xblock.preguntas = {'1': {'tipo_celda': 'input', 'texto_input': 'Una'}}
+        self.xblock.attempts = 0
+        request = TestRequest()
+        request.method = 'POST'
+        request.body = json.dumps(
+            {'respuestas': [{'name': 1, 'value': 'xx'}]}
+        ).encode('utf-8')
+        response = self.xblock.responder(request)
+        self.assertEqual(self.xblock.attempts, 0)
+        self.assertTrue(response.json_body.get('min_chars_error'))
+
     def test_add_questions(self):
         #pruebo agregar preguntas
         request = TestRequest()

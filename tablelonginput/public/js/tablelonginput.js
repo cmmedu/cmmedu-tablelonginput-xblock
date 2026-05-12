@@ -207,6 +207,8 @@ function TLIXBlock(runtime, element, settings) {
         $.ajax({
             type: "POST",
             url: handlerUrl,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
             data: JSON.stringify({"respuestas": resps}),
             success: updateText,
             error: function() {
@@ -222,4 +224,24 @@ function TLIXBlock(runtime, element, settings) {
     });
 
     refreshAllMinSatisfiedClasses();
+
+    var tablelonginputid = "tablelonginput_" + settings.sublocation;
+    renderMathForSpecificElements(tablelonginputid);
+
+    function renderMathForSpecificElements(id) {
+        //console.log("Render mathjax in " + id)
+        console.log("[CMM-ORDER-TABLE] Render mathjax in " + id)
+        if (typeof MathJax !== "undefined") {
+            var $ordtab = $('#' + id);
+            console.log("[TABLELONGINPUT] encontrado " + $ordtab)
+            //console.log($ordtab)
+            if ($ordtab.length) {
+                $ordtab.find('.tli-table-content').each(function (index, ordtabelem) {
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub, ordtabelem]);
+                });
+            }
+        } else {
+            console.warn("[CMM-ORDER-TABLE] MathJax no está cargado.");
+        }
+    }
 }

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*- 
 """Bloque Tablas de entradas de texto"""
 
+import json
 import pkg_resources
 import re
 
@@ -323,6 +324,128 @@ class tablelonginputXBlock(XBlock):
         return False
 
     @staticmethod
+    def compute_minimo_efectivo_for_cell(preg_data, min_caracter_input):
+        """
+        Same rule as student_view: effective minimum length and flags per input cell.
+        Returns (minimo_efectivo, obligatoria, minimo_diferente_activo, minimo_diferente).
+        """
+        if not isinstance(preg_data, dict):
+            preg_data = {}
+        obligatoria = tablelonginputXBlock.normalize_required_flag(
+            preg_data.get('obligatoria', False)
+        )
+        minimo_diferente_activo = tablelonginputXBlock.normalize_required_flag(
+            preg_data.get('minimo_diferente_activo', False)
+        )
+        minimo_diferente = tablelonginputXBlock.normalize_minimo_diferente(
+            preg_data.get('minimo_diferente', 0)
+        )
+        min_car = tablelonginputXBlock.normalize_min_caracter_input(min_caracter_input)
+        if minimo_diferente_activo:
+            minimo_efectivo = minimo_diferente
+        elif obligatoria:
+            minimo_efectivo = max(1, min_car)
+        else:
+            minimo_efectivo = min_car
+        return minimo_efectivo, obligatoria, minimo_diferente_activo, minimo_diferente
+
+    def _response_min_chars_error(self, message):
+        """Reject submission without consuming an attempt (same shape as before)."""
+        return {
+            'texto': message,
+            'min_chars_error': True,
+            'score': self.score,
+            'nro_de_intentos': self.max_attempts,
+            'intentos': self.attempts,
+            'last_submission_time': (
+                self.last_submission_time.isoformat() if self.last_submission_time else ''
+            ),
+            'indicator_class': self.get_indicator_class(),
+        }
+
+    def _studio_gettext(self, text):
+        """Translate Studio UI strings using the XBlock i18n service when available."""
+        service = self.runtime.service(self, 'i18n')
+        if service is None:
+            return text
+        for attr in ('gettext', 'ugettext'):
+            getter = getattr(service, attr, None)
+            if callable(getter):
+                try:
+                    return getter(text)
+                except Exception:  # pylint: disable=broad-except
+                    continue
+        return text
+
+    def _build_studio_ui_strings(self):
+        """
+        All Studio editor labels and help texts (single source for template + JS).
+        Msgids match the previous template copy so behavior stays the same without .mo files;
+        add translations in locale/*/LC_MESSAGES/*.po as needed.
+        """
+        _ = self._studio_gettext
+        return {
+            'label_display_name': _('Display Name'),
+            'help_display_name': _('Nombre del componente en el curso.'),
+            'label_texto': _('Texto'),
+            'help_texto': _('Texto mostrado en la vista del estudiante (según la configuración del bloque).'),
+            'label_weight': _('Peso'),
+            'help_weight': _('Puntos que valen las respuestas de este bloque en la calificación.'),
+            'label_attempts': _('Nro. de Intentos'),
+            'help_attempts': _('Cantidad máxima de envíos permitidos por el estudiante.'),
+            'label_area_height': _('Altura del área de respuesta'),
+            'help_area_height': _('Altura CSS del textarea (ej. 120px o 8rem).'),
+            'label_min_caracter_input': _('Mínimo de caracteres por respuesta'),
+            'help_min_caracter_input': _(
+                '0 = sin límite. Solo aplica a celdas tipo input.'
+            ),
+            'label_color_border_completed': _(
+                'Color borde al cumplir el mínimo de caracteres'
+            ),
+            'help_color_border_completed': _(
+                'Hexadecimal (#rrggbb o #rgb), por defecto #008801.'
+            ),
+            'label_numbering_type': _('Tipo de numeración'),
+            'opt_numbering_none': _('Sin numeración'),
+            'opt_numbering_numbers': _('1, 2, 3...'),
+            'opt_numbering_numbers_zero': _('0, 1, 2...'),
+            'opt_numbering_letters': _('a, b, c...'),
+            'opt_numbering_roman': _('i, ii, iii...'),
+            'label_texto_header_num': _('Texto de cabecera de la numeración'),
+            'help_texto_header_num': _('Encabezado de la columna de numeración (admite HTML).'),
+            'label_pretext_num': _('Texto antes de la numeración'),
+            'help_pretext_num': _('Texto mostrado antes de cada número o letra (ej. paréntesis).'),
+            'label_postext_num': _('Texto después de la numeración'),
+            'help_postext_num': _('Texto mostrado después de cada número o letra.'),
+            'label_columnas_por_fila': _('Celdas por fila (sin contar numeración)'),
+            'help_columnas_por_fila': _('Número de celdas de pregunta por fila de la tabla (1 a 3).'),
+            'title_row_zero': _('Fila 0'),
+            'label_mostrar_header_tabla': _('Mostrar encabezado en la tabla'),
+            'header_column_prefix': _('Encabezado columna'),
+            'header_column_suffix_html': _(' (admite HTML)'),
+            'label_tipo_celda': _('Tipo de celda'),
+            'opt_tipo_texto': _('Texto'),
+            'opt_tipo_input': _('Input'),
+            'label_texto_celda': _('Texto'),
+            'label_texto_input': _('Texto antes del input (opcional)'),
+            'label_minimo_diferente_activo': _('Número mínimo diferente'),
+            'label_minimo_diferente': _('Mínimo diferente para esta celda'),
+            'help_minimo_diferente_cell': _(
+                '0 = no obligatoria. Mayor a 0 = mínimo de caracteres para esta celda.'
+            ),
+            'btn_save': _('Save'),
+            'btn_cancel': _('Cancel'),
+            'btn_add_row': _('Agregar otra fila'),
+            'row_label_prefix': _('Fila'),
+            'btn_delete_row_prefix': _('Eliminar Fila'),
+            'save_incomplete_row_alert': _(
+                'Debe haber al menos una fila completa antes de guardar '
+                '(una celda por cada columna configurada).'
+            ),
+            'save_error_generic': _('No se pudo guardar.'),
+        }
+
+    @staticmethod
     def normalize_header_celdas(raw, columnas_por_fila):
         """
         Devuelve un dict con claves '0'..'n-1' y valores string para el encabezado por columna.
@@ -347,6 +470,7 @@ class tablelonginputXBlock(XBlock):
             initialize_js_func,
             additional_css=[],
             additional_js=[],
+            js_json_args=None,
     ):
         #  pylint: disable=dangerous-default-value, too-many-arguments
         """
@@ -359,10 +483,13 @@ class tablelonginputXBlock(XBlock):
         for item in additional_js:
             url = self.runtime.local_resource_url(self, item)
             fragment.add_javascript_url(url)
-        settings = {
-            'image_path': self.runtime.local_resource_url(self, 'public/images/'),
-            'is_past_due': self.get_is_past_due()
-        }
+        if js_json_args is not None:
+            settings = dict(js_json_args)
+        else:
+            settings = {
+                'image_path': self.runtime.local_resource_url(self, 'public/images/'),
+                'is_past_due': self.get_is_past_due()
+            }
         fragment.initialize_js(initialize_js_func, json_args=settings)
         return fragment
 
@@ -390,12 +517,9 @@ class tablelonginputXBlock(XBlock):
             minimo_diferente = self.normalize_minimo_diferente(
                 preg_data.get('minimo_diferente', 0)
             )
-            if minimo_diferente_activo:
-                minimo_efectivo = minimo_diferente
-            elif obligatoria:
-                minimo_efectivo = max(1, min_caracter_input)
-            else:
-                minimo_efectivo = min_caracter_input
+            minimo_efectivo, _, _, _ = self.compute_minimo_efectivo_for_cell(
+                preg_data, min_caracter_input
+            )
             lista_pregs.append({
                 'id': preg[0],
                 'tipo_celda': tipo_celda,
@@ -491,6 +615,8 @@ class tablelonginputXBlock(XBlock):
         """
         Create a fragment used to display the edit view in the Studio.
         """
+        if context is None:
+            context = {}
         #Tuve que pasar las preguntas a una lista para ordenarlas
         lista_pregs_raw = [[k, v] for k, v in list(self.preguntas.items())]
         lista_pregs_raw = sorted(lista_pregs_raw, key=lambda x: int(x[0]))
@@ -524,6 +650,7 @@ class tablelonginputXBlock(XBlock):
                 'text': hc.get(str(i), '') or '',
             })
 
+        studio_ui = self._build_studio_ui_strings()
         context.update(
             {
                 'display_name': self.display_name,
@@ -545,6 +672,7 @@ class tablelonginputXBlock(XBlock):
                 'color_de_celdas_completadas': self.normalize_color_de_celdas_completadas(
                     self.color_de_celdas_completadas
                 ),
+                'studio_ui': studio_ui,
             }
         )
         template = loader.render_django_template(
@@ -561,6 +689,7 @@ class tablelonginputXBlock(XBlock):
             additional_js=[
                 'public/js/tablelonginput_studio.js',
             ],
+            js_json_args={'studio_ui': studio_ui},
         )    
         return frag
 
@@ -570,125 +699,96 @@ class tablelonginputXBlock(XBlock):
         """
         Responder el V o F
         """
-        print("Revisar Long Input ")
+        if not isinstance(data, dict):
+            try:
+                raw = getattr(data, 'body', '') or ''
+                if isinstance(raw, bytes):
+                    raw = raw.decode('utf-8')
+                data = json.loads(raw) if raw else {}
+            except (AttributeError, TypeError, ValueError):
+                data = {}
         #Reviso si no estoy haciendo trampa y contestando mas veces en paralelo
         max_attempts_fixed = self.max_attempts if self.max_attempts else self.attempts + 1 # Fix max attempts None
         if ((self.attempts + 1) <= max_attempts_fixed) or max_attempts_fixed <= 0:
             nuevas_resps = {}
             texto = self.texto_correcto
-            buenas = 0.0
-            malas = 0.0
-            total = len(self.preguntas)
 
-            for e in data['respuestas']:
-                idpreg = e['name']
-                miresp = e['value']
-                nuevas_resps[idpreg] = miresp
-                buenas+=1
+            respuestas_list = data.get('respuestas')
+            if not isinstance(respuestas_list, list):
+                respuestas_list = []
+
+            for e in respuestas_list:
+                idpreg = str(e.get('name', ''))
+                nuevas_resps[idpreg] = e.get('value', '')
+
+            min_car = self.normalize_min_caracter_input(self.min_caracter_input)
 
             for idpreg, preg_data in self.preguntas.items():
+                idpreg_key = str(idpreg)
                 if not isinstance(preg_data, dict):
                     continue
                 if preg_data.get('tipo_celda', 'input') != 'input':
                     continue
-                minimo_diferente_activo = self.normalize_required_flag(
-                    preg_data.get('minimo_diferente_activo', False)
-                )
-                minimo_diferente = self.normalize_minimo_diferente(
-                    preg_data.get('minimo_diferente', 0)
-                )
-                if minimo_diferente_activo:
-                    if minimo_diferente <= 0:
-                        continue
-                    respuesta = nuevas_resps.get(idpreg, '')
-                    if len(str(respuesta).strip()) < minimo_diferente:
-                        return {
-                            'texto': (
-                                'Las celdas con mínimo diferente deben tener al menos '
-                                + str(minimo_diferente)
-                                + ' caracteres.'
-                            ),
-                            'min_chars_error': True,
-                            'score': self.score,
-                            'nro_de_intentos': self.max_attempts,
-                            'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
-                            'indicator_class': self.get_indicator_class(),
-                        }
-                    continue
-                if not self.normalize_required_flag(preg_data.get('obligatoria', False)):
-                    continue
-                respuesta = nuevas_resps.get(idpreg, '')
-                if not str(respuesta).strip():
-                    return {
-                        'texto': 'Debe completar todas las celdas obligatorias antes de enviar.',
-                        'score': self.score,
-                        'nro_de_intentos': self.max_attempts,
-                        'intentos': self.attempts,
-                        'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
-                        'indicator_class': self.get_indicator_class(),
-                    }
 
-            min_len = self.normalize_min_caracter_input(self.min_caracter_input)
-            if min_len > 0:
-                for idpreg, preg_data in self.preguntas.items():
-                    if not isinstance(preg_data, dict):
-                        continue
-                    if preg_data.get('tipo_celda', 'input') != 'input':
-                        continue
-                    respuesta = nuevas_resps.get(idpreg, '')
-                    texto = str(respuesta).strip()
-                    minimo_diferente_activo = self.normalize_required_flag(
-                        preg_data.get('minimo_diferente_activo', False)
-                    )
-                    minimo_diferente = self.normalize_minimo_diferente(
-                        preg_data.get('minimo_diferente', 0)
-                    )
-                    if minimo_diferente_activo:
-                        if minimo_diferente > 0 and len(texto) < minimo_diferente:
-                            return {
-                                'texto': (
-                                    'Las celdas con mínimo diferente deben tener al menos '
-                                    + str(minimo_diferente)
-                                    + ' caracteres.'
-                                ),
-                                'min_chars_error': True,
-                                'score': self.score,
-                                'nro_de_intentos': self.max_attempts,
-                                'intentos': self.attempts,
-                                'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
-                                'indicator_class': self.get_indicator_class(),
-                            }
-                        continue
-                    obligatoria = self.normalize_required_flag(preg_data.get('obligatoria', False))
-                    if obligatoria and len(texto) < min_len:
+                (
+                    minimo_efectivo,
+                    obligatoria,
+                    minimo_diferente_activo,
+                    minimo_diferente,
+                ) = self.compute_minimo_efectivo_for_cell(preg_data, min_car)
+
+                respuesta = nuevas_resps.get(idpreg_key, '')
+                texto_resp = str(respuesta).strip()
+
+                if obligatoria:
+                    if not texto_resp:
                         return {
                             'texto': (
+                                'Debe completar todas las celdas obligatorias antes de enviar.'
+                            ),
+                            'score': self.score,
+                            'nro_de_intentos': self.max_attempts,
+                            'intentos': self.attempts,
+                            'last_submission_time': (
+                                self.last_submission_time.isoformat()
+                                if self.last_submission_time
+                                else ''
+                            ),
+                            'indicator_class': self.get_indicator_class(),
+                        }
+                    if minimo_efectivo > 0 and len(texto_resp) < minimo_efectivo:
+                        if minimo_diferente_activo and minimo_diferente > 0:
+                            msg = (
+                                'Las celdas con mínimo diferente deben tener al menos '
+                                + str(minimo_efectivo)
+                                + ' caracteres.'
+                            )
+                        else:
+                            msg = (
                                 'Cada celda obligatoria debe tener al menos '
-                                + str(min_len)
+                                + str(minimo_efectivo)
                                 + ' caracteres.'
-                            ),
-                            'min_chars_error': True,
-                            'score': self.score,
-                            'nro_de_intentos': self.max_attempts,
-                            'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
-                            'indicator_class': self.get_indicator_class(),
-                        }
-                    if not obligatoria and texto and len(texto) < min_len:
-                        return {
-                            'texto': (
+                            )
+                        return self._response_min_chars_error(msg)
+                else:
+                    if (
+                        texto_resp
+                        and minimo_efectivo > 0
+                        and len(texto_resp) < minimo_efectivo
+                    ):
+                        if minimo_diferente_activo and minimo_diferente > 0:
+                            msg = (
+                                'Las celdas con mínimo diferente deben tener al menos '
+                                + str(minimo_efectivo)
+                                + ' caracteres.'
+                            )
+                        else:
+                            msg = (
                                 'Las respuestas no vacías deben tener al menos '
-                                + str(min_len)
+                                + str(minimo_efectivo)
                                 + ' caracteres.'
-                            ),
-                            'min_chars_error': True,
-                            'score': self.score,
-                            'nro_de_intentos': self.max_attempts,
-                            'intentos': self.attempts,
-                            'last_submission_time': self.last_submission_time.isoformat() if self.last_submission_time else '',
-                            'indicator_class': self.get_indicator_class(),
-                        }
+                            )
+                        return self._response_min_chars_error(msg)
 
             self.respuestas = nuevas_resps
 
