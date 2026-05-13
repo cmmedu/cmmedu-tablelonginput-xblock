@@ -52,7 +52,7 @@
               {% else %}
               {% if pregunta.texto_input %}
               <div class="tli-cell-prompt">
-                {{ pregunta.texto_input|safe }}{% if pregunta.minimo_efectivo > 0 %} *{% endif %}
+                {{ pregunta.texto_input|safe }}{% if pregunta.minimo_efectivo > 0 %}{% endif %}
               </div>
               {% endif %}
               <div class="tli-cell-input" style="text-align: justify;">
