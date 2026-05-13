@@ -827,7 +827,10 @@ class tablelonginputXBlock(XBlock):
                     }
         else:
             return {
-                    'texto': str('Error: El estado de este problema fue modificado, por favor recargue la página.','utf8'),
+                    'texto': (
+                        'Error: El estado de este problema fue modificado, '
+                        'por favor recargue la página.'
+                    ),
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
                     'intentos': self.attempts, 
