@@ -112,8 +112,8 @@
         <div class="tli-studio-row-title">{{ studio_ui.title_row_zero }}</div>
         <div class="wrapper-comp-setting">
           <label class="label setting-label" for="mostrar_header_tabla">
-            <input class="input setting-input" name="mostrar_header_tabla" id="mostrar_header_tabla" type="checkbox" {% if mostrar_header_tabla %}checked="checked"{% endif %} />
             {{ studio_ui.label_mostrar_header_tabla }}
+            <input class="input setting-input" name="mostrar_header_tabla" id="mostrar_header_tabla" type="checkbox" {% if mostrar_header_tabla %}checked="checked"{% endif %} />
           </label>
         </div>
         <div id="tli-studio-header-cells">
@@ -144,8 +144,8 @@
           </div>
           <div class="wrapper-comp-setting cell-minimo-diferente-check-field" pregunta-id="{{key}}">
             <label class="label setting-label" for="minimo_diferente_activo_{{key}}">
-              <input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.minimo_diferente_activo|default:False %}checked{% endif %} />
               {{ studio_ui.label_minimo_diferente_activo }}
+              <input class="input setting-input" name="minimo_diferente_activo" id="minimo_diferente_activo_{{key}}" pregunta-id="{{key}}" type="checkbox" {% if value.minimo_diferente_activo|default:False %}checked{% endif %} />
             </label>
           </div>
           <div class="wrapper-comp-setting cell-minimo-diferente-value-field tli-setting-with-help" pregunta-id="{{key}}">
