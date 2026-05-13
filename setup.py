@@ -27,7 +27,10 @@ setup(
     name='tablelonginput-xblock',
     version='0.1',
     description='XBlock table with true/false questions',
-    license='AGPL v3',
+    license='MIT',
+    classifiers=[
+        'License :: OSI Approved :: MIT License',
+    ],
     packages=[
         'tablelonginput',
     ],
