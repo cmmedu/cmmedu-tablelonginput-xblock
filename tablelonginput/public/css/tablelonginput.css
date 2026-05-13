@@ -354,7 +354,7 @@
 
 /* Cualquier ayuda en la lista de celdas (p. ej. filas añadidas por JS) */
 #settings-tab #listapreguntas .help.setting-help {
-    font-size: 0.9375rem;
+    font-size: 1.52rem;
     line-height: 1.52;
     color: #3d4f5f;
 }
