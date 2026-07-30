@@ -25,15 +25,17 @@
 }
 */
 
+/* Structural button styles, always applied. Background color is intentionally
+   left to the platform theme (.course-wrapper .submit) so this button matches
+   native problem submit buttons. */
 .tli_block .action .tli-submit,
 .tli_block .action .check {
-    background-color: #dc0000 !important;
     background-image: none !important;
     border-color: white !important;
     box-sizing: border-box !important;
     border-radius: 10px !important;
     padding: 8px 20px !important;
-    color: white !important;
+    color: white;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     text-shadow: none !important;
@@ -47,16 +49,21 @@
     font-size: 16px;
 }
 
+/* Only applied when the Studio author sets an explicit submit_button_color */
+.tli_block .action .tli-submit.tli-submit-custom-color {
+    background-color: var(--cmmedu-submit-color) !important;
+}
+
 .tli_block .action .tli-submit:hover,
 .tli_block .action .check:hover {
-    background-color: #750101 !important;
+    filter: brightness(0.75);
     box-shadow: none !important;
     border-width: 1px !important;
 }
 
 .tli_block .action .tli-submit:focus,
 .tli_block .action .check:focus {
-    background-color: #b30000 !important;
+    filter: brightness(0.85);
     box-shadow: none !important;
     border-width: 1px !important;
 }

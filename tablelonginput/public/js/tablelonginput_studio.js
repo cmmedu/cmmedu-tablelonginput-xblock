@@ -203,6 +203,7 @@ function TLIEditBlock(runtime, element, settings) {
             area_height: $(element).find('input[name=area_height]').val(),
             min_caracter_input: $(element).find('input[name=min_caracter_input]').val(),
             color_de_celdas_completadas: $(element).find('input[name=color_de_celdas_completadas]').val(),
+            submit_button_color: $(element).find('input[name=submit_button_color]').val(),
             numbering_type: $(element).find('select.numbering_type').val(),
             pretext_num: $(element).find('input[name=pretext_num]').val(),
             postext_num: $(element).find('input[name=postext_num]').val(),

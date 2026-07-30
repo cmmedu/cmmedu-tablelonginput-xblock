@@ -202,6 +202,13 @@ class tablelonginputXBlock(XBlock):
         scope=Scope.settings,
     )
 
+    submit_button_color = String(
+        display_name="Color del botón de enviar",
+        help="Color de fondo del botón de enviar en formato hexadecimal. Dejar en blanco para usar el color por defecto de la plataforma",
+        default="",
+        scope=Scope.settings,
+    )
+
     columnas_por_fila = Integer(
         display_name="Cantidad de celdas por fila",
         help="Cantidad de celdas de contenido por fila (sin contar numeración)",
@@ -289,6 +296,19 @@ class tablelonginputXBlock(XBlock):
         if re.match(r'^#[0-9a-fA-F]{3}$', candidate) or re.match(r'^#[0-9a-fA-F]{6}$', candidate):
             return candidate
         return default
+
+    @staticmethod
+    def normalize_submit_button_color(value):
+        """
+        Returns a safe #rgb or #rrggbb color for the submit button, or '' to
+        defer to the platform's default submit button color.
+        """
+        if value is None:
+            return ''
+        candidate = str(value).strip()
+        if re.match(r'^#[0-9a-fA-F]{3}$', candidate) or re.match(r'^#[0-9a-fA-F]{6}$', candidate):
+            return candidate
+        return ''
 
     @staticmethod
     def normalize_min_caracter_input(value):
@@ -404,6 +424,10 @@ class tablelonginputXBlock(XBlock):
             ),
             'help_color_border_completed': _(
                 'Hexadecimal (#rrggbb o #rgb), por defecto #008801.'
+            ),
+            'label_submit_button_color': _('Color del botón de enviar'),
+            'help_submit_button_color': _(
+                'Hexadecimal (#rrggbb o #rgb). Dejar en blanco para usar el color por defecto de la plataforma.'
             ),
             'label_numbering_type': _('Tipo de numeración'),
             'opt_numbering_none': _('Sin numeración'),
@@ -589,6 +613,7 @@ class tablelonginputXBlock(XBlock):
                 'color_de_celdas_completadas': self.normalize_color_de_celdas_completadas(
                     self.color_de_celdas_completadas
                 ),
+                'submit_button_color': self.normalize_submit_button_color(self.submit_button_color),
                 'indicator_class': self.get_indicator_class(),
                 'show_correctness': self.get_show_correctness(),
             }
@@ -672,6 +697,7 @@ class tablelonginputXBlock(XBlock):
                 'color_de_celdas_completadas': self.normalize_color_de_celdas_completadas(
                     self.color_de_celdas_completadas
                 ),
+                'submit_button_color': self.normalize_submit_button_color(self.submit_button_color),
                 'studio_ui': studio_ui,
             }
         )
@@ -903,6 +929,9 @@ class tablelonginputXBlock(XBlock):
         )
         self.color_de_celdas_completadas = self.normalize_color_de_celdas_completadas(
             data.get('color_de_celdas_completadas', self.color_de_celdas_completadas)
+        )
+        self.submit_button_color = self.normalize_submit_button_color(
+            data.get('submit_button_color', self.submit_button_color)
         )
         if data.get('weight') and int(data.get('weight')) >= 0:
             self.weight = int(data.get('weight'))
