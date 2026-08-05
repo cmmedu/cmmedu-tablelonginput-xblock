@@ -77,41 +77,6 @@ class tablelonginputXBlock(XBlock):
         default="¡Respuesta enviada!",
     )
 
-    # Campos heredados del XBlock V/F base; siguen usados en Studio/handlers.
-    texto_verdadero = String(
-        display_name="Texto verdadero (legacy)",
-        help="Vestigio del bloque base; puede ignorarse en la práctica.",
-        scope=Scope.settings,
-        default="V",
-    )
-
-    texto_falso = String(
-        display_name="Texto",
-        help="Texto configurable en Studio (etiqueta heredada del bloque V/F).",
-        scope=Scope.settings,
-        default="",
-    )
-
-    texto_correcto = String(
-        display_name="Texto respuesta correcta",
-        help="Mensaje devuelto al enviar la respuesta con éxito.",
-        scope=Scope.settings,
-        default="¡Correcto!",
-    )
-
-    texto_incorrecto = String(
-        display_name="Texto respuesta incorrecta",
-        help="Mensaje si la respuesta se considera incorrecta.",
-        scope=Scope.settings,
-        default="Incorrecto.",
-    )
-
-    texto_parcial = String(
-        display_name="Texto respuesta parcial",
-        help="Mensaje para puntaje parcial.",
-        scope=Scope.settings,
-        default="Respuesta parcial.",
-    )
 
     #preguntas
     preguntas = Dict(default={'1': {'enunciado': 'Completa...'}, '2': {}},
@@ -150,7 +115,7 @@ class tablelonginputXBlock(XBlock):
     attempts = Integer(
         display_name='Intentos',
         help='Cuantas veces el estudiante ha intentado responder',
-        default=0,
+        default=1,
         values={'min': 0},
         scope=Scope.user_state,
     )
@@ -407,8 +372,6 @@ class tablelonginputXBlock(XBlock):
         return {
             'label_display_name': _('Display Name'),
             'help_display_name': _('Nombre del componente en el curso.'),
-            'label_texto': _('Texto'),
-            'help_texto': _('Texto mostrado en la vista del estudiante (según la configuración del bloque).'),
             'label_weight': _('Peso'),
             'help_weight': _('Puntos que valen las respuestas de este bloque en la calificación.'),
             'label_attempts': _('Nro. de Intentos'),
@@ -587,13 +550,10 @@ class tablelonginputXBlock(XBlock):
                 'preguntas': lista_pregs,
                 'filas_preguntas': filas_preguntas,
                 'respuestas': self.respuestas,
-                'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
                 'mostrar_header_tabla': self.mostrar_header_tabla,
                 'header_row_cells': header_row_cells,
                 'use_legacy_header': use_legacy_header,
-                'texto_correcto': self.texto_correcto,
-                'texto_incorrecto': self.texto_incorrecto,
                 'texto_intentos': texto_intentos,
                 'no_mas_intentos': no_mas_intentos,
                 'nro_de_intentos': self.max_attempts,
@@ -681,7 +641,6 @@ class tablelonginputXBlock(XBlock):
                 'display_name': self.display_name,
                 'preguntas': lista_pregs,
                 'location': self.location,
-                'texto_falso': self.texto_falso,
                 'texto_header': self.texto_header,
                 'texto_header_num': self.texto_header_num,
                 'mostrar_header_tabla': self.mostrar_header_tabla,
@@ -737,7 +696,7 @@ class tablelonginputXBlock(XBlock):
         max_attempts_fixed = self.max_attempts if self.max_attempts else self.attempts + 1 # Fix max attempts None
         if ((self.attempts + 1) <= max_attempts_fixed) or max_attempts_fixed <= 0:
             nuevas_resps = {}
-            texto = self.texto_correcto
+            texto = 'Respuesta enviada correctamente.'
 
             respuestas_list = data.get('respuestas')
             if not isinstance(respuestas_list, list):
@@ -821,9 +780,6 @@ class tablelonginputXBlock(XBlock):
             #puntaje
             self.score = 1
 
-            if self.score > 0 and self.score < 1:
-                texto = self.texto_parcial
-
             ptje = float(self.weight)*self.score
             try:
                 self.runtime.publish(
@@ -903,10 +859,6 @@ class tablelonginputXBlock(XBlock):
             }
 
         self.display_name = data.get('display_name')
-        if 'texto_verdadero' in data and data.get('texto_verdadero') is not None:
-            self.texto_verdadero = data.get('texto_verdadero')
-        if 'texto_falso' in data and data.get('texto_falso') is not None:
-            self.texto_falso = data.get('texto_falso')
         self.texto_header_num = data.get('texto_header_num', self.texto_header_num)
         self.numbering_type = data.get('numbering_type', self.numbering_type)
         self.pretext_num = data.get('pretext_num', self.pretext_num)

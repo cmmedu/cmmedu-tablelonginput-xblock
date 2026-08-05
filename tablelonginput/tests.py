@@ -172,7 +172,7 @@ class TestTableLongInputXBlock(unittest.TestCase):
 
         response = self.xblock.responder(request)
         body = response.json_body
-        self.assertEqual(body['texto'], self.xblock.texto_correcto)
+        self.assertEqual(body['texto'], 'Respuesta enviada correctamente.')
         self.assertEqual(body['score'], 1.0)
         self.assertEqual(body['intentos'], 1)
         self.assertTrue(self.xblock.respondido)
@@ -265,7 +265,6 @@ class TestTableLongInputXBlock(unittest.TestCase):
             'mostrar_header_tabla': False,
             'header_celdas': {},
             'texto_header': '',
-            'texto_falso': '',
         }
         request.body = json.dumps(payload).encode('utf-8')
 
