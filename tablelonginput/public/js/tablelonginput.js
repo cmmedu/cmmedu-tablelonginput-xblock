@@ -15,6 +15,7 @@ function TLIXBlock(runtime, element, settings) {
         minCaracterInput = 0;
     }
     var handlerUrl = runtime.handlerUrl(element, 'responder');
+    var getStateUrl = runtime.handlerUrl(element, 'get_state');
     var minCharsBannerMsg = 'Verifique que sus respuestas cumplen con el mínimo de caracteres.';
 
     if (areaHeight) {
@@ -224,6 +225,47 @@ function TLIXBlock(runtime, element, settings) {
     });
 
     refreshAllMinSatisfiedClasses();
+
+    // Refresca el estado desde el servidor (disabled del boton y clase de
+    // .status) al cambiar de pestana de secuencia dentro de la misma unidad
+    // de edX, ya que el bloque no se recarga pero puede quedar desincronizado
+    // con el estado real del estudiante (relevante para Eol Conditional).
+    function refreshStateFromServer() {
+        $.ajax({
+            type: "POST",
+            url: getStateUrl,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({}),
+            success: function(result) {
+                if (result && result.result === 'success') {
+                    updateText(result);
+                }
+            },
+            error: function() {
+                console.error('[CMM-TABLELONGINPUT] Error al refrescar el estado para ' + settings.sublocation);
+            }
+        });
+    }
+
+    // Detecta clicks en las pestañas de navegación de secuencia de edX
+    // (las tabs de la unidad, no las pestañas del navegador).
+    var sequenceTabHandler = function(event) {
+        var $clickedElement = $(event.target);
+        var isSequenceTab = $clickedElement.closest('#sequence-list').length > 0 &&
+            $clickedElement.hasClass('nav-item');
+        if (isSequenceTab) {
+            setTimeout(refreshStateFromServer, 300);
+        }
+    };
+
+    // Evento disparado por la navegación de secuencia de edX al cambiar de pestaña.
+    var sequenceChangeHandler = function() {
+        setTimeout(refreshStateFromServer, 300);
+    };
+
+    $(document).on('click', '#sequence-list .nav-item', sequenceTabHandler);
+    $(element).on('sequence:change', sequenceChangeHandler);
 
     var tablelonginputid = "tablelonginput_" + settings.sublocation;
     renderMathForSpecificElements(tablelonginputid);

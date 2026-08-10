@@ -110,7 +110,15 @@ class tablelonginputXBlock(XBlock):
         help='Altura de las areas de texto',
         default='116px',
         scope=Scope.settings,
-    )    
+    )
+
+    max_attempts = Integer(
+        display_name='Nro. de Intentos',
+        help='Entero que representa cuantas veces se puede responder problema, 0 para intentos ilimitados',
+        default=0,
+        values={'min': 0},
+        scope=Scope.settings,
+    )
 
     attempts = Integer(
         display_name='Intentos',
@@ -820,6 +828,21 @@ class tablelonginputXBlock(XBlock):
                     'indicator_class': self.get_indicator_class(),
                     }
 
+
+    @XBlock.json_handler
+    def get_state(self, data, suffix=''):  # pylint: disable=unused-argument
+        """
+        Devuelve el estado actual del estudiante para refrescar la interfaz sin
+        recargar la pagina, por ejemplo al cambiar de pestana de secuencia
+        dentro de la misma unidad de edX.
+        """
+        return {
+            'result': 'success',
+            'score': self.score,
+            'nro_de_intentos': self.max_attempts,
+            'intentos': self.attempts,
+            'indicator_class': self.get_indicator_class(),
+        }
 
     @XBlock.json_handler
     def studio_submit(self, data, suffix=''):
