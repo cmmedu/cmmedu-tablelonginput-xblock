@@ -148,7 +148,10 @@ class TestTableLongInputXBlock(unittest.TestCase):
 
     def test_defaults(self):
         self.assertEqual(self.xblock.display_name, 'Table long input XBlock')
-        self.assertEqual(self.xblock.attempts, 0)
+        # attempts is stored 1-indexed (it represents the upcoming attempt),
+        # so a fresh xblock has consumed 0 attempts even though the raw field is 1.
+        self.assertEqual(self.xblock.attempts, 1)
+        self.assertEqual(self.xblock.get_attempts_used(), 0)
         self.assertEqual(self.xblock.score, 0.0)
         self.assertFalse(self.xblock.respondido)
         self.assertEqual(self.xblock.get_indicator_class(), 'unanswered')
@@ -157,7 +160,7 @@ class TestTableLongInputXBlock(unittest.TestCase):
 
     def test_get_problem_progress_unattempted(self):
         self.xblock.weight = 2
-        self.xblock.attempts = 0
+        self.xblock.attempts = 1
         self.assertIn('2 puntos posibles', self.xblock.get_problem_progress())
 
     def test_responder_success_default_preguntas(self):
@@ -210,11 +213,13 @@ class TestTableLongInputXBlock(unittest.TestCase):
         response = self.xblock.responder(request)
         body = response.json_body
         self.assertTrue(body.get('min_chars_error'))
-        self.assertEqual(self.xblock.attempts, 0)
+        # A rejected submission must not consume an attempt.
+        self.assertEqual(self.xblock.get_attempts_used(), 0)
 
     def test_responder_max_intentos(self):
         self.xblock.max_attempts = 1
-        self.xblock.attempts = 1
+        # 1 attempt already used out of 1 allowed -> raw field is used(1) + 1.
+        self.xblock.attempts = 2
         request = TestRequest()
         request.method = 'POST'
         request.body = json.dumps({
@@ -227,7 +232,7 @@ class TestTableLongInputXBlock(unittest.TestCase):
         response = self.xblock.responder(request)
         body = response.json_body
         self.assertIn('Error', body['texto'])
-        self.assertEqual(self.xblock.attempts, 1)
+        self.assertEqual(self.xblock.attempts, 2)
 
     def test_studio_submit_success(self):
         request = TestRequest()

@@ -122,7 +122,10 @@ class tablelonginputXBlock(XBlock):
 
     attempts = Integer(
         display_name='Intentos',
-        help='Cuantas veces el estudiante ha intentado responder',
+        help=(
+            'Numero del intento que se realizara a continuacion (1-indexado). '
+            'Usar get_attempts_used() para la cantidad de intentos ya consumidos.'
+        ),
         default=1,
         values={'min': 0},
         scope=Scope.user_state,
@@ -349,7 +352,7 @@ class tablelonginputXBlock(XBlock):
             'min_chars_error': True,
             'score': self.score,
             'nro_de_intentos': self.max_attempts,
-            'intentos': self.attempts,
+            'intentos': self.get_attempts_used(),
             'last_submission_time': (
                 self.last_submission_time.isoformat() if self.last_submission_time else ''
             ),
@@ -546,10 +549,11 @@ class tablelonginputXBlock(XBlock):
         no_mas_intentos = False
 
         if self.max_attempts and self.max_attempts > 0:
-            texto_intentos = "Ha realizado "+str(self.attempts)+" de "+str(self.max_attempts)+" intentos"
+            attempts_used = self.get_attempts_used()
+            texto_intentos = "Ha realizado "+str(attempts_used)+" de "+str(self.max_attempts)+" intentos"
             if self.max_attempts == 1:
-                texto_intentos = "Ha realizado "+str(self.attempts)+" de "+str(self.max_attempts)+" intento"
-            if self.attempts >= self.max_attempts:
+                texto_intentos = "Ha realizado "+str(attempts_used)+" de "+str(self.max_attempts)+" intento"
+            if attempts_used >= self.max_attempts:
                 no_mas_intentos = True
 
         context.update(
@@ -701,8 +705,9 @@ class tablelonginputXBlock(XBlock):
             except (AttributeError, TypeError, ValueError):
                 data = {}
         #Reviso si no estoy haciendo trampa y contestando mas veces en paralelo
-        max_attempts_fixed = self.max_attempts if self.max_attempts else self.attempts + 1 # Fix max attempts None
-        if ((self.attempts + 1) <= max_attempts_fixed) or max_attempts_fixed <= 0:
+        attempts_used = self.get_attempts_used()
+        max_attempts_fixed = self.max_attempts if self.max_attempts else attempts_used + 1 # Fix max attempts None
+        if ((attempts_used + 1) <= max_attempts_fixed) or max_attempts_fixed <= 0:
             nuevas_resps = {}
             texto = 'Respuesta enviada correctamente.'
 
@@ -741,7 +746,7 @@ class tablelonginputXBlock(XBlock):
                             ),
                             'score': self.score,
                             'nro_de_intentos': self.max_attempts,
-                            'intentos': self.attempts,
+                            'intentos': self.get_attempts_used(),
                             'last_submission_time': (
                                 self.last_submission_time.isoformat()
                                 if self.last_submission_time
@@ -811,7 +816,7 @@ class tablelonginputXBlock(XBlock):
                     'texto':texto,
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
-                    'intentos': self.attempts, 
+                    'intentos': self.get_attempts_used(),
                     'last_submission_time': self.last_submission_time.isoformat(),
                     'indicator_class': self.get_indicator_class(),
                     }
@@ -823,7 +828,7 @@ class tablelonginputXBlock(XBlock):
                     ),
                     'score':self.score,
                     'nro_de_intentos': self.max_attempts,
-                    'intentos': self.attempts, 
+                    'intentos': self.get_attempts_used(),
                     'last_submission_time': self.last_submission_time,
                     'indicator_class': self.get_indicator_class(),
                     }
@@ -840,7 +845,7 @@ class tablelonginputXBlock(XBlock):
             'result': 'success',
             'score': self.score,
             'nro_de_intentos': self.max_attempts,
-            'intentos': self.attempts,
+            'intentos': self.get_attempts_used(),
             'indicator_class': self.get_indicator_class(),
         }
 
@@ -916,9 +921,20 @@ class tablelonginputXBlock(XBlock):
     
         return {'result': 'success'}
 
+    def get_attempts_used(self):
+        """
+        Returns how many attempts the student has already consumed.
+
+        ``self.attempts`` is stored 1-indexed (it defaults to 1 and represents
+        the attempt about to be made, matching the common single-attempt
+        configuration where max_attempts=1 must remain answerable on first
+        load), so the used count is always one less.
+        """
+        return max(self.attempts - 1, 0)
+
     def get_indicator_class(self):
         indicator_class = 'unanswered'
-        if self.respondido and self.attempts:
+        if self.respondido and self.get_attempts_used():
             if self.score >= 1:
                 indicator_class = 'correct'
             else:
@@ -974,7 +990,7 @@ class tablelonginputXBlock(XBlock):
             calif = ' (calificable)'
         if self.weight == 0:
             result = '0 puntos posibles'+calif
-        elif self.attempts <= 0:
+        elif self.get_attempts_used() <= 0:
             if self.weight == 1:
                 result = "1 punto posible"+calif
             else:
