@@ -59,3 +59,7 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#tests
+test_root/
+wf_tmp/
