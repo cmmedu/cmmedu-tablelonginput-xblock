@@ -25,7 +25,7 @@ def package_data(pkg, roots):
 
 setup(
     name='tablelonginput-xblock',
-    version='0.1',
+    version='1.0.0',
     description='XBlock table with true/false questions',
     license='MIT',
     classifiers=[
